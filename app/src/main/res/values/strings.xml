@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HASEEB GAMING</string>
+    <string name="brand_subtitle">ANDROID-ON-ANDROID HYPERVISOR</string>
+    <string name="cd_brand_logo">Haseeb Gaming Emblem</string>
+    <string name="cd_hero_banner">Haseeb Gaming Android 10 ROM Artwork</string>
+    <string name="cd_import_firmware">Import firmware archive</string>
+    <string name="cd_logs_nav">Open VM and guest logs</string>
+    <string name="cd_settings_nav">Open emulator settings</string>
+    <string name="cd_root_nav">Open Magisk root panel</string>
+    <string name="first_launch_badge">FIRST LAUNCH SETUP</string>
+    <string name="first_launch_title">Official Gaming ROM Ready</string>
+    <string name="first_launch_body">Download Haseeb Gaming Android 10 (arm64, Magisk pre-installed) directly from GitHub Releases. SHA-256 verified and auto-imported with zero manual file picking.</string>
+    <string name="action_download_verify">Download &amp; Auto-Import ROM</string>
+    <string name="action_skip_for_now">Dismiss</string>
+    <string name="hero_card_badge">HASEEB ROM A10 · MAGISK READY</string>
+    <string name="hero_card_title">Install our gaming ROM</string>
+    <string name="hero_card_subtitle">Debloated Android 10 arm64 · HWUI + LMK tuned · Magisk root included</string>
+    <string name="hero_card_cta">Install ROM</string>
+    <string name="section_installed_systems">Installed Systems</string>
+    <string name="section_installed_count">%1$d VM(s)</string>
+    <string name="empty_systems_title">No Virtual Android Systems Yet</string>
+    <string name="empty_systems_body">Install our bundled Android 10 Gaming ROM above or tap + to import an existing firmware archive (.zip / .img).</string>
+    <string name="label_last_boot">Last boot</string>
+    <string name="label_never_booted">Never booted</string>
+    <string name="label_magisk_badge">MAGISK</string>
+    <string name="label_verified_badge">VERIFIED</string>
+    <string name="action_boot_vm">Launch VM</string>
+    <string name="action_gaming_mode">Gaming Mode</string>
+    <string name="fab_import_label">Import</string>
+    <string name="status_downloading">Downloading %1$d%% (%2$s)</string>
+    <string name="status_verifying">Verifying SHA-256 checksums…</string>
+    <string name="status_extracting">Extracting system &amp; boot images…</string>
+    <string name="status_importing">Registering virtual system…</string>
+    <string name="status_rom_ready">Haseeb Gaming A10 ROM imported</string>
+    <string name="status_error_prefix">ROM import failed: %1$s</string>
+    <string name="milestone_notice_title">Milestone 1 Ready</string>
+    <string name="milestone_notice_body">QEMU JNI engine, Gaming Mode, Fullscreen SurfaceView, Root Panel, Logs, and Settings will activate in Milestones 2–3.</string>
+</resources>
