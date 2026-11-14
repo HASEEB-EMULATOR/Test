@@ -36,8 +36,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 _uiState.update { state ->
                     state.copy(
                         showFirstLaunchOffer = !dismissed && state.systems.isEmpty(),
-                        githubRepoSlug = repo,
-                        romReleaseTag = tag,
+                        settings = state.settings.copy(
+                            githubRepoSlug = repo,
+                            romReleaseTag = tag,
+                        ),
                     )
                 }
             }
@@ -133,6 +135,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun inspectSystem(system: VmSystem?) {
-        _uiState.update { it.copy(selectedSystemForInspect = system) }
+        _uiState.update { it.copy(gamingDialogSystem = system) }
     }
 }

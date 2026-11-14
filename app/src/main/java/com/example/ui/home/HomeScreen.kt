@@ -188,8 +188,8 @@ fun HomeScreen(
                     if (uiState.showFirstLaunchOffer) {
                         item {
                             FirstLaunchRomOfferCard(
-                                repoSlug = uiState.githubRepoSlug,
-                                releaseTag = uiState.romReleaseTag,
+                                repoSlug = uiState.settings.githubRepoSlug,
+                                releaseTag = uiState.settings.romReleaseTag,
                                 isBusy = isBusy,
                                 onDownload = viewModel::installBundledGamingRom,
                                 onDismiss = viewModel::dismissFirstLaunchOffer,
@@ -235,7 +235,7 @@ fun HomeScreen(
         }
     }
 
-    uiState.selectedSystemForInspect?.let { system ->
+    uiState.gamingDialogSystem?.let { system ->
         SystemInspectDialog(
             system = system,
             onDismiss = { viewModel.inspectSystem(null) },
