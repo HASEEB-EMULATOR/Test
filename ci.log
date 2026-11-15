@@ -7,7 +7,8 @@
 [8] cleaned build-full.log
 [8] cleaned ci.log
 [8] .gitignore updated
-[9] gradle.properties: ['android.useAndroidX=true', 'android.enableJetifier=true']
+[9] gradle.properties: already ok
+[10] core-ktx -> 1.13.1, activity-compose -> 1.9.3 (compileSdk 35 safe)
 
 --- result ---
       alias(libs.plugins.android.application)
@@ -20,5 +21,4 @@ Loading package information...                                                  
 
 SDK_INSTALL=0
 GRADLE_DL=0
-GRADLE_UNZIP=0
 GRADLE_BUILD=1
