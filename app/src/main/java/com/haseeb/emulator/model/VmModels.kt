@@ -1,4 +1,4 @@
-package com.example.model
+package com.haseeb.emulator.model
 
 enum class QualityPreset(val heightPx: Int, val label: String) {
     P360(360, "360p"),

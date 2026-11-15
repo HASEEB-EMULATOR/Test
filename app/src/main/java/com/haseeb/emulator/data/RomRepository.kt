@@ -1,4 +1,4 @@
-package com.example.data
+package com.haseeb.emulator.data
 
 import android.content.Context
 import android.net.Uri
@@ -7,9 +7,9 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.model.HomeUiState
-import com.example.model.RomInstallStage
-import com.example.model.VmSystem
+import com.haseeb.emulator.model.HomeUiState
+import com.haseeb.emulator.model.RomInstallStage
+import com.haseeb.emulator.model.VmSystem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

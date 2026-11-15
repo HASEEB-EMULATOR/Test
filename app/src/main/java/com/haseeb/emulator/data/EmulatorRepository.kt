@@ -1,4 +1,4 @@
-package com.example.data
+package com.haseeb.emulator.data
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -6,16 +6,16 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.model.AppLanguage
-import com.example.model.AppSettingsState
-import com.example.model.AppThemeMode
-import com.example.model.DeviceProfile
-import com.example.model.GameProfile
-import com.example.model.GamingLaunchConfig
-import com.example.model.HomeUiState
-import com.example.model.QualityPreset
-import com.example.model.RefreshRateOption
-import com.example.model.VmSystem
+import com.haseeb.emulator.model.AppLanguage
+import com.haseeb.emulator.model.AppSettingsState
+import com.haseeb.emulator.model.AppThemeMode
+import com.haseeb.emulator.model.DeviceProfile
+import com.haseeb.emulator.model.GameProfile
+import com.haseeb.emulator.model.GamingLaunchConfig
+import com.haseeb.emulator.model.HomeUiState
+import com.haseeb.emulator.model.QualityPreset
+import com.haseeb.emulator.model.RefreshRateOption
+import com.haseeb.emulator.model.VmSystem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

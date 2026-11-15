@@ -1,4 +1,4 @@
-package com.example.ui.components
+package com.haseeb.emulator.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -30,13 +30,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.example.ui.theme.GlassBorderSubtle
-import com.example.ui.theme.GlassBorderTeal
-import com.example.ui.theme.GlassSurface
-import com.example.ui.theme.GlassSurfaceElevated
-import com.example.ui.theme.OnTealAccent
-import com.example.ui.theme.TealAccent
-import com.example.ui.theme.TealAccentBright
+import com.haseeb.emulator.ui.theme.GlassBorderSubtle
+import com.haseeb.emulator.ui.theme.GlassBorderTeal
+import com.haseeb.emulator.ui.theme.GlassSurface
+import com.haseeb.emulator.ui.theme.GlassSurfaceElevated
+import com.haseeb.emulator.ui.theme.OnTealAccent
+import com.haseeb.emulator.ui.theme.TealAccent
+import com.haseeb.emulator.ui.theme.TealAccentBright
 
 @Composable
 fun GlassCard(

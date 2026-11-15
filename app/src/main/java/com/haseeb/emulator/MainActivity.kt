@@ -1,13 +1,12 @@
-package com.example
-
+package com.haseeb.emulator
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.ui.home.HomeScreen
-import com.example.ui.theme.HaseebGamingTheme
+import com.haseeb.emulator.ui.home.HomeScreen
+import com.haseeb.emulator.ui.theme.HaseebGamingTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-  namespace = "com.example"
+  namespace = "com.haseeb.emulator"
   compileSdk = 35
   ndkVersion = "27.0.12077973"
 
   defaultConfig {
-    applicationId = "com.aistudio.haseebgaming.hgvmx"
+    applicationId = "com.haseeb.emulator"
     minSdk = 26
     // targetSdk 28 allows execve() of auxiliary binaries in app data dir on legacy/mid Android,
     // while QEMU itself will also be packaged in jniLibs for Android 10-16 W^X compliance.

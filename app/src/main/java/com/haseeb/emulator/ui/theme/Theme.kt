@@ -1,4 +1,4 @@
-package com.example.ui.theme
+package com.haseeb.emulator.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme

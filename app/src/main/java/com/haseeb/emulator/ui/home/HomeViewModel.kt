@@ -1,13 +1,13 @@
-package com.example.ui.home
+package com.haseeb.emulator.ui.home
 
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.data.RomRepository
-import com.example.model.HomeUiState
-import com.example.model.RomInstallStage
-import com.example.model.VmSystem
+import com.haseeb.emulator.data.RomRepository
+import com.haseeb.emulator.model.HomeUiState
+import com.haseeb.emulator.model.RomInstallStage
+import com.haseeb.emulator.model.VmSystem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
