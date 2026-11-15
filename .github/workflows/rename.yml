@@ -1,0 +1,102 @@
+name: Rename package
+on: workflow_dispatch
+permissions: write-all
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rename everything to com.haseeb.emulator
+        run: |
+          python3 - <<'PY'
+          import os, re, shutil, subprocess
+
+          NEW = "com.haseeb.emulator"
+          NEW_PATH = NEW.replace(".", "/")
+          SRC = "app/src/main/java"
+
+          # 1) move com/example -> com/haseeb/emulator
+          old_dir = os.path.join(SRC, "com/example")
+          new_dir = os.path.join(SRC, NEW_PATH)
+          os.makedirs(os.path.dirname(new_dir), exist_ok=True)
+          if os.path.isdir(old_dir):
+              if os.path.isdir(new_dir):
+                  for root, _, files in os.walk(old_dir):
+                      for f in files:
+                          rel = os.path.relpath(os.path.join(root, f), old_dir)
+                          dst = os.path.join(new_dir, rel)
+                          os.makedirs(os.path.dirname(dst), exist_ok=True)
+                          shutil.move(os.path.join(root, f), dst)
+                  shutil.rmtree(old_dir)
+              else:
+                  subprocess.run(["git", "mv", old_dir, new_dir], check=False)
+              print("moved com/example")
+
+          # 2) move com/haseeb/gaming -> com/haseeb/emulator
+          old_eng = os.path.join(SRC, "com/haseeb/gaming")
+          if os.path.isdir(old_eng):
+              os.makedirs(new_dir, exist_ok=True)
+              for f in os.listdir(old_eng):
+                  shutil.move(os.path.join(old_eng, f), os.path.join(new_dir, f))
+              shutil.rmtree(old_eng)
+              print("moved com/haseeb/gaming")
+
+          # 3) rewrite packages and imports
+          n = 0
+          for root, _, files in os.walk(SRC):
+              for f in files:
+                  if not f.endswith(".kt"): continue
+                  p = os.path.join(root, f)
+                  s = open(p, encoding="utf-8").read()
+                  o = s
+                  s = re.sub(r'^package\s+com\.(example|haseeb\.gaming)\s*$', "package " + NEW, s, flags=re.M)
+                  s = s.replace("import com.example.", "import " + NEW + ".")
+                  s = s.replace("import com.haseeb.gaming.", "import " + NEW + ".")
+                  s = s.replace("com.example.", NEW + ".")
+                  s = s.replace("com.haseeb.gaming.", NEW + ".")
+                  if s != o:
+                      open(p, "w", encoding="utf-8").write(s); n += 1
+          print("rewrote", n, "kotlin files")
+
+          # 4) JNI symbols
+          p = "app/src/main/cpp/haseeb_vm_jni.cpp"
+          s = open(p, encoding="utf-8").read()
+          s = s.replace("Java_com_haseeb_gaming_Engine_", "Java_com_haseeb_emulator_Engine_")
+          open(p, "w", encoding="utf-8").write(s)
+          print("jni symbols:", s.count("Java_com_haseeb_emulator_Engine_"))
+
+          # 5) gradle
+          p = "app/build.gradle.kts"; s = open(p, encoding="utf-8").read()
+          s = re.sub(r'namespace\s*=\s*"[^"]*"', 'namespace = "' + NEW + '"', s)
+          s = re.sub(r'applicationId\s*=\s*"[^"]*"', 'applicationId = "' + NEW + '"', s)
+          open(p, "w", encoding="utf-8").write(s)
+          print("gradle:", [l.strip() for l in s.split("\n") if "namespace" in l or "applicationId" in l])
+
+          # 6) manifest
+          p = "app/src/main/AndroidManifest.xml"; s = open(p, encoding="utf-8").read()
+          s = s.replace("com.example.MainActivity", NEW + ".MainActivity")
+          s = s.replace("com.aistudio.haseebgaming.hgvmx", NEW)
+          s = s.replace('package="com.example"', 'package="' + NEW + '"')
+          open(p, "w", encoding="utf-8").write(s)
+          print("manifest patched")
+
+          # 7) verify no stragglers
+          bad = []
+          for root, _, files in os.walk("app/src/main"):
+              for f in files:
+                  if f.endswith((".kt", ".xml", ".cpp")):
+                      p = os.path.join(root, f)
+                      try: t = open(p, encoding="utf-8").read()
+                      except: continue
+                      if "com.example" in t or "com.aistudio" in t or "com.haseeb.gaming" in t:
+                          bad.append(p)
+          print("leftovers:", bad if bad else "none")
+          PY
+
+      - name: Commit
+        run: |
+          git config user.name rename-bot
+          git config user.email rename-bot@users.noreply.github.com
+          git add -A
+          git commit -m "rename package to com.haseeb.emulator [skip ci]" || echo "nothing"
+          git push || true
