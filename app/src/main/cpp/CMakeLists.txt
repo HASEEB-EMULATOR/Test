@@ -23,6 +23,9 @@ add_library(
     src/cpu_core.cpp
     src/machine.cpp
     src/ext4_reader.cpp
+    src/elf64_loader.cpp
+    src/prop_area.cpp
+    src/property_service.cpp
 )
 
 target_include_directories(
