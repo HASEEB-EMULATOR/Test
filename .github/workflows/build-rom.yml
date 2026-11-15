@@ -12,6 +12,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -24,7 +25,7 @@ jobs:
           sudo apt-get install -y -qq xz-utils e2fsprogs cpio zip unzip android-sdk-libsparse-utils 2>&1 | tail -3
           echo "apt done"
 
-      - name: SDK + image
+      - name: SDK + system image
         run: |
           set +e
           SDK=$HOME/android-sdk
@@ -57,51 +58,59 @@ jobs:
           done
           ls -lh work
 
-      - name: Tune with debugfs (no mount)
+      - name: Tune system.img (debugfs, no mount)
         run: |
           set +e
           cd work
-          if file system.img | grep -qi sparse; then simg2img system.img r.img && mv r.img system.img && echo "unsparsed"; fi
+          if file system.img | grep -qi sparse; then simg2img system.img r.img && mv r.img system.img && echo unsparsed; fi
           e2fsck -fy system.img > /dev/null 2>&1
           resize2fs system.img > /dev/null 2>&1
 
           debugfs -R "dump /system/build.prop bp.txt" system.img 2>/dev/null
-          [ -s bp.txt ] || printf "" > bp.txt
+          [ -s bp.txt ] || : > bp.txt
           cat >> bp.txt <<'EOF'
 
           # HASEEB GAMING tuning
           ro.haseeb.rom=gaming
+          ro.haseeb.version=1.0
           ro.debuggable=0
           ro.secure=1
           ro.build.tags=release-keys
           windowsmgr.max_events_per_sec=150
           ro.min_pointer_dur=8
           ro.max.fling_velocity=20000
+          ro.min.fling_velocity=8000
           ro.config.low_ram=false
           persist.sys.ui.hw=1
           EOF
           debugfs -w -R "rm /system/build.prop" system.img 2>/dev/null
           debugfs -w -R "write bp.txt /system/build.prop" system.img 2>/dev/null
-          echo "build.prop patched:"
-          debugfs -R "cat /system/build.prop" system.img 2>/dev/null | tail -6
+          echo "--- build.prop tail ---"
+          debugfs -R "cat /system/build.prop" system.img 2>/dev/null | tail -8
 
-          echo "haseeb-gaming" > marker.txt
+          echo "haseeb-gaming-a${{ inputs.api }}" > marker.txt
           debugfs -w -R "write marker.txt /system/etc/haseeb_rom" system.img 2>/dev/null
           ls -lh system.img
 
-      - name: boot.img
+      - name: Build boot.img
         run: |
           set +e
           cd work
           MK=$(find "$SDK/build-tools" -name mkbootimg | head -1)
+          chmod +x "$MK" 2>/dev/null
+          K=$(ls kernel-ranchu-64 kernel-ranchu 2>/dev/null | head -1)
           echo "mkbootimg=$MK"
-          K=$(ls kernel-ranchu-64 kernel-ranchu kernel 2>/dev/null | head -1)
-          echo "kernel=$K ramdisk=$(ls ramdisk.img 2>/dev/null)"
+          echo "kernel=$K"
+          echo "ramdisk=$(ls ramdisk.img 2>/dev/null)"
           if [ -n "$MK" ] && [ -n "$K" ] && [ -f ramdisk.img ]; then
-            chmod +x "$MK"
             "$MK" --kernel "$K" --ramdisk ramdisk.img \
               --cmdline "console=ttyAMA0 androidboot.hardware=ranchu androidboot.selinux=permissive" \
-              --pagesize 4096 --output boot.img && echo "boot.img built"
+              --base 0x40000000 --kernel_offset 0x00008000 --ramdisk_offset 0x01000000 \
+              --tags_offset 0x00000100 --pagesize 2048 --header_version 0 \
+              --output boot.img && echo "boot.img OK"
+            ls -lh boot.img
+            # sanity: legacy ANDROID! magic
+            head -c 8 boot.img | xxd | head -1
           else
             echo "boot.img skipped"
           fi
@@ -109,16 +118,19 @@ jobs:
       - name: Package
         run: |
           set +e
-          cd work && sha256sum *.img *.kernel* 2>/dev/null > ../out/sha256.txt; cd ..
-          printf '{"name":"HaseebGaming-API${{ inputs.api }}-arm64","api":${{ inputs.api }},"arch":"arm64"}\n' > out/manifest.json
+          cd work && sha256sum *.img kernel* 2>/dev/null > ../out/sha256.txt; cd ..
+          printf '{"name":"HaseebGaming-API${{ inputs.api }}-arm64","api":${{ inputs.api }},"arch":"arm64","parts":["system.img","boot.img","vendor.img","ramdisk.img"]}\n' > out/manifest.json
           ZIP=HaseebGaming-API${{ inputs.api }}-arm64.zip
           zip -r9 "$ZIP" out work 2>&1 | tail -2
           ls -lh "$ZIP"
 
-      - name: Save log
+      - name: Save artifacts to repo
         if: always()
         run: |
           git config user.name ci-bot; git config user.email ci-bot@users.noreply.github.com
+          mkdir -p rom-out
+          cp out/manifest.json out/sha256.txt rom-out/ 2>/dev/null
+          cp work/bp.txt rom-out/build_prop_after.txt 2>/dev/null
           git add -A; git commit -m "rom artifacts [skip ci]" || echo "nothing"
           git pull --rebase --autostash || true; git push || true
 
