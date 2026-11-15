@@ -8,24 +8,15 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(HASEEB_BUILD_HOST_TESTS "Build host unit and integration tests" OFF)
 option(HASEEB_BUILD_GUEST_TEST "Build standalone VM integration test binary" OFF)
 
+file(GLOB HASEEB_CORE_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+list(REMOVE_ITEM HASEEB_CORE_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/engine_runtime.cpp
+)
+
 add_library(
     haseeb_vm_core
     STATIC
-    src/boot_image.cpp
-    src/fdt_builder.cpp
-    src/guest_ram.cpp
-    src/pl011_uart.cpp
-    src/mmu_tlb.cpp
-    src/dbt_cache.cpp
-    src/cpu_sysregs.cpp
-    src/cpu_neon.cpp
-    src/cpu_mem_atomics.cpp
-    src/cpu_core.cpp
-    src/machine.cpp
-    src/ext4_reader.cpp
-    src/elf64_loader.cpp
-    src/prop_area.cpp
-    src/property_service.cpp
+    ${HASEEB_CORE_SOURCES}
 )
 
 target_include_directories(
