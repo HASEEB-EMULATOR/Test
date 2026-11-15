@@ -1,9 +1,9 @@
 #pragma once
 
-#include "haseeb/elf64_loader.hpp"
+#include "haseeb/boot_image.hpp"
 #include "haseeb/ext4_reader.hpp"
-#include "haseeb/prop_area.hpp"
-#include "haseeb/property_service.hpp"
+#include "haseeb/machine.hpp"
+#include "haseeb/vm_types.hpp"
 
 #include <android/native_window.h>
 #include <atomic>
@@ -12,7 +12,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <vector>
 
 namespace haseeb::engine {
 
@@ -22,6 +21,7 @@ struct GuestConfig {
     int height = 1560;
     int dpi = 320;
     int ram_mb = 2048;
+    int vcpu_count = 4;
 
     std::string model = "SM-S938B";
     std::string brand = "samsung";
@@ -39,32 +39,32 @@ class EngineRuntime {
 public:
     static EngineRuntime& Instance();
 
-    void SetPath(const std::string& dir);
-    void SetNativeLibDir(const std::string& lib_dir);
+    vm::VmError SetPath(const std::string& dir);
+    vm::VmError SetNativeLibDir(const std::string& lib_dir);
+    vm::VmError LoadBootImage(const std::string& path);
+    vm::VmError LoadSystemImage(const std::string& path);
     void ConfigureGuestProps(const GuestConfig& config);
 
-    bool Start(int api, int width, int height, int dpi, int ram_mb);
-    void AttachSurface(ANativeWindow* window);
-    void SendTouch(int action, int x, int y, int pointer_id);
-    void SendKey(int code, bool down);
-    void SendText(const std::string& text);
+    vm::VmError Start(int api, int width, int height, int dpi, int ram_mb);
+    vm::VmError AttachSurface(ANativeWindow* window);
+    vm::VmError SendTouch(int action, int x, int y, int pointer_id);
+    vm::VmError SendKey(int code, bool down);
+    vm::VmError SendText(const std::string& text);
+    vm::VmError SetTargetFps(int fps);
     std::string ReadLog(int max_bytes);
-    void Stop();
-
-    bool IsRunning() const { return running_.load(); }
     float GetGuestFps() const { return measured_fps_.load(); }
+    bool IsRunning() const { return running_.load(); }
+    vm::VmError Stop();
 
-    const prop::PropertyAreaManager& PropertyManager() const { return prop_manager_; }
-    const loader::GuestVfsResolver& VfsResolver() const { return vfs_resolver_; }
+    const vm::VirtualMachineSkeleton& Machine() const { return machine_; }
+    const vm::ParsedBootImage& BootInfo() const { return boot_image_; }
 
 private:
-    EngineRuntime() = default;
+    EngineRuntime();
     ~EngineRuntime();
 
     void AppendLog(const std::string& level, const std::string& msg);
-    void ApplyGuestIdentityOverrides(const GuestConfig& cfg);
-    void InitializeGuestLoaderLocked(int api);
-    void PresentPlaceholderFrame();
+    void PresentBootFrame();
 
     mutable std::mutex mutex_;
     std::mutex log_mutex_;
@@ -72,21 +72,19 @@ private:
 
     std::string work_dir_;
     std::string native_lib_dir_;
+    std::string boot_image_path_;
+    std::string system_image_path_;
+    bool has_boot_image_ = false;
+    bool has_system_image_ = false;
+
     GuestConfig config_;
-
-    prop::PropertyAreaManager prop_manager_;
-    std::unique_ptr<prop::PropertyService> prop_service_;
-
+    vm::ParsedBootImage boot_image_;
     loader::Ext4Reader system_ext4_;
-    loader::Ext4Reader vendor_ext4_;
-    loader::GuestVfsResolver vfs_resolver_;
-    loader::Elf64Loader elf_loader_;
-    std::unique_ptr<loader::LoadedElfImage> probed_guest_exe_;
-    std::unique_ptr<loader::LoadedElfImage> probed_guest_linker_;
-    std::vector<uint64_t> guest_auxv_;
+    vm::VirtualMachineSkeleton machine_;
 
     ANativeWindow* window_ = nullptr;
     std::atomic<bool> running_{false};
+    std::atomic<int> target_fps_{60};
     std::atomic<float> measured_fps_{0.0f};
 
     std::deque<std::string> log_lines_;

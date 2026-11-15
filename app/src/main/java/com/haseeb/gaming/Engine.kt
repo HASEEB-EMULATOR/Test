@@ -2,6 +2,26 @@ package com.haseeb.gaming
 
 import android.view.Surface
 
+/**
+ * Full-System VM JNI Bridge (libhaseeb_vm.so).
+ *
+ * Error Codes (0 = success, negative = failure):
+ *   0   VM_OK
+ *  -1   ERR_INVALID_ARGUMENT
+ *  -2   ERR_PATH_NOT_SET
+ *  -3   ERR_FILE_NOT_FOUND
+ *  -4   ERR_IO_FAILURE
+ *  -5   ERR_INVALID_BOOT_IMAGE
+ *  -6   ERR_UNSUPPORTED_VERSION
+ *  -7   ERR_INVALID_SYSTEM_IMAGE
+ *  -8   ERR_OUT_OF_MEMORY
+ *  -9   ERR_ALREADY_RUNNING
+ * -10   ERR_NOT_RUNNING
+ * -11   ERR_SURFACE_ATTACH_FAILED
+ * -12   ERR_GUEST_KERNEL_INVALID
+ * -13   ERR_FDT_BUILD_FAILED
+ * -14   ERR_EXECUTION_TRAP
+ */
 object Engine {
     @Volatile
     var nativeLibraryLoaded: Boolean = false
@@ -21,32 +41,25 @@ object Engine {
         }
     }
 
-    external fun setPath(path: String)
+    external fun setPath(dir: String): Int
 
-    external fun setNativeLibDir(libDir: String)
+    external fun setNativeLibDir(dir: String): Int
 
-    external fun configureGuestProps(
-        model: String,
-        brand: String,
-        manufacturer: String,
-        device: String,
-        name: String,
-        marketname: String,
-        fingerprint: String,
-        navBarOff: Boolean,
-        magiskPromptEnabled: Boolean,
-        targetFps: Int,
-    )
+    external fun loadBootImage(path: String): Int
 
-    external fun start(api: Int, width: Int, height: Int, dpi: Int, ramMb: Int): Boolean
+    external fun loadSystemImage(path: String): Int
 
-    external fun attachSurface(surface: Surface?)
+    external fun start(api: Int, width: Int, height: Int, dpi: Int, ramMb: Int): Int
 
-    external fun sendTouch(action: Int, x: Int, y: Int, id: Int)
+    external fun attachSurface(surface: Surface?): Int
 
-    external fun sendKey(code: Int, down: Boolean)
+    external fun sendTouch(action: Int, x: Int, y: Int, id: Int): Int
 
-    external fun sendText(text: String)
+    external fun sendKey(code: Int, down: Boolean): Int
+
+    external fun sendText(text: String): Int
+
+    external fun setTargetFps(fps: Int): Int
 
     external fun readLog(maxBytes: Int): String
 
@@ -54,5 +67,5 @@ object Engine {
 
     external fun isRunning(): Boolean
 
-    external fun stop()
+    external fun stop(): Int
 }

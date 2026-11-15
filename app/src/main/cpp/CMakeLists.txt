@@ -5,24 +5,28 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(HASEEB_BUILD_HOST_TESTS "Build x86_64 host unit and integration tests" OFF)
-option(HASEEB_BUILD_GUEST_TEST "Build standalone guest integration test binary" OFF)
+option(HASEEB_BUILD_HOST_TESTS "Build host unit and integration tests" OFF)
+option(HASEEB_BUILD_GUEST_TEST "Build standalone VM integration test binary" OFF)
 
 add_library(
-    haseeb_prop_area
+    haseeb_vm_core
     STATIC
-    src/prop_area.cpp
-    src/property_service.cpp
+    src/boot_image.cpp
+    src/fdt_builder.cpp
+    src/guest_ram.cpp
+    src/pl011_uart.cpp
+    src/machine.cpp
+    src/ext4_reader.cpp
 )
 
 target_include_directories(
-    haseeb_prop_area
+    haseeb_vm_core
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_compile_options(
-    haseeb_prop_area
+    haseeb_vm_core
     PRIVATE
     -Wall
     -Wextra
@@ -31,29 +35,7 @@ target_compile_options(
 )
 
 find_package(Threads REQUIRED)
-target_link_libraries(haseeb_prop_area PUBLIC Threads::Threads)
-
-add_library(
-    haseeb_guest_loader
-    STATIC
-    src/ext4_reader.cpp
-    src/elf64_loader.cpp
-)
-
-target_include_directories(
-    haseeb_guest_loader
-    PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_compile_options(
-    haseeb_guest_loader
-    PRIVATE
-    -Wall
-    -Wextra
-    -Werror=return-type
-    -O2
-)
+target_link_libraries(haseeb_vm_core PUBLIC Threads::Threads)
 
 if(ANDROID)
     add_library(
@@ -91,72 +73,27 @@ if(ANDROID)
     target_link_libraries(
         haseeb_vm
         PRIVATE
-        haseeb_prop_area
-        haseeb_guest_loader
+        haseeb_vm_core
         ${android-lib}
         ${log-lib}
     )
 endif()
 
 if(HASEEB_BUILD_HOST_TESTS OR HASEEB_BUILD_GUEST_TEST)
-    add_executable(
-        haseeb_guest_prop_test
-        tests/guest_prop_integration_test.cpp
-    )
-    target_include_directories(
-        haseeb_guest_prop_test
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
-    target_compile_options(haseeb_guest_prop_test PRIVATE -Wall -Wextra -O2)
-    target_link_libraries(haseeb_guest_prop_test PRIVATE haseeb_prop_area)
-
-    add_executable(
-        haseeb_guest_loader_test
-        tests/guest_loader_integration_test.cpp
-    )
-    target_include_directories(
-        haseeb_guest_loader_test
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
-    target_compile_options(haseeb_guest_loader_test PRIVATE -Wall -Wextra -O2)
-    target_link_libraries(haseeb_guest_loader_test PRIVATE haseeb_guest_loader haseeb_prop_area)
-
-    if(ANDROID)
-        target_link_options(haseeb_guest_prop_test PRIVATE -Wl,-z,max-page-size=16384)
-        target_link_options(haseeb_guest_loader_test PRIVATE -Wl,-z,max-page-size=16384)
-    endif()
-endif()
-
-if(HASEEB_BUILD_HOST_TESTS)
     enable_testing()
     add_executable(
-        haseeb_m1_unit_tests
-        tests/m1_property_area_test.cpp
+        haseeb_m1_vm_tests
+        tests/m1_boot_machine_test.cpp
     )
     target_include_directories(
-        haseeb_m1_unit_tests
+        haseeb_m1_vm_tests
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
-    target_compile_options(haseeb_m1_unit_tests PRIVATE -Wall -Wextra -O2)
-    target_link_libraries(haseeb_m1_unit_tests PRIVATE haseeb_prop_area)
-
-    add_executable(
-        haseeb_m2_unit_tests
-        tests/m2_guest_loader_test.cpp
-    )
-    target_include_directories(
-        haseeb_m2_unit_tests
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
-    target_compile_options(haseeb_m2_unit_tests PRIVATE -Wall -Wextra -O2)
-    target_link_libraries(haseeb_m2_unit_tests PRIVATE haseeb_guest_loader)
-
-    add_test(NAME m1_property_area_unit_tests COMMAND haseeb_m1_unit_tests)
-    add_test(NAME m1_guest_prop_integration_test COMMAND haseeb_guest_prop_test)
-    add_test(NAME m2_guest_loader_unit_tests COMMAND haseeb_m2_unit_tests)
-    add_test(NAME m2_guest_loader_integration_test COMMAND haseeb_guest_loader_test)
+    target_compile_options(haseeb_m1_vm_tests PRIVATE -Wall -Wextra -O2)
+    target_link_libraries(haseeb_m1_vm_tests PRIVATE haseeb_vm_core)
+    if(ANDROID)
+        target_link_options(haseeb_m1_vm_tests PRIVATE -Wl,-z,max-page-size=16384)
+    endif()
+    add_test(NAME m1_boot_machine_tests COMMAND haseeb_m1_vm_tests)
 endif()

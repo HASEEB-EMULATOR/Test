@@ -14,50 +14,35 @@ std::string JStringToStd(JNIEnv* env, jstring s) {
     return out;
 }
 
+jint AsJint(haseeb::vm::VmError err) {
+    return static_cast<jint>(err);
+}
+
 } // namespace
 
 extern "C" {
 
-JNIEXPORT void JNICALL
-Java_com_haseeb_gaming_Engine_setPath(JNIEnv* env, jobject /* thiz */, jstring path) {
-    haseeb::engine::EngineRuntime::Instance().SetPath(JStringToStd(env, path));
+JNIEXPORT jint JNICALL
+Java_com_haseeb_gaming_Engine_setPath(JNIEnv* env, jobject /* thiz */, jstring dir) {
+    return AsJint(haseeb::engine::EngineRuntime::Instance().SetPath(JStringToStd(env, dir)));
 }
 
-JNIEXPORT void JNICALL
-Java_com_haseeb_gaming_Engine_setNativeLibDir(JNIEnv* env, jobject /* thiz */, jstring lib_dir) {
-    haseeb::engine::EngineRuntime::Instance().SetNativeLibDir(JStringToStd(env, lib_dir));
+JNIEXPORT jint JNICALL
+Java_com_haseeb_gaming_Engine_setNativeLibDir(JNIEnv* env, jobject /* thiz */, jstring dir) {
+    return AsJint(haseeb::engine::EngineRuntime::Instance().SetNativeLibDir(JStringToStd(env, dir)));
 }
 
-JNIEXPORT void JNICALL
-Java_com_haseeb_gaming_Engine_configureGuestProps(
-    JNIEnv* env,
-    jobject /* thiz */,
-    jstring model,
-    jstring brand,
-    jstring manufacturer,
-    jstring device,
-    jstring name,
-    jstring marketname,
-    jstring fingerprint,
-    jboolean nav_bar_off,
-    jboolean magisk_prompt_enabled,
-    jint target_fps
-) {
-    haseeb::engine::GuestConfig cfg;
-    cfg.model = JStringToStd(env, model);
-    cfg.brand = JStringToStd(env, brand);
-    cfg.manufacturer = JStringToStd(env, manufacturer);
-    cfg.device = JStringToStd(env, device);
-    cfg.name = JStringToStd(env, name);
-    cfg.marketname = JStringToStd(env, marketname);
-    cfg.fingerprint = JStringToStd(env, fingerprint);
-    cfg.nav_bar_off = (nav_bar_off == JNI_TRUE);
-    cfg.magisk_prompt_enabled = (magisk_prompt_enabled == JNI_TRUE);
-    cfg.target_fps = target_fps;
-    haseeb::engine::EngineRuntime::Instance().ConfigureGuestProps(cfg);
+JNIEXPORT jint JNICALL
+Java_com_haseeb_gaming_Engine_loadBootImage(JNIEnv* env, jobject /* thiz */, jstring path) {
+    return AsJint(haseeb::engine::EngineRuntime::Instance().LoadBootImage(JStringToStd(env, path)));
 }
 
-JNIEXPORT jboolean JNICALL
+JNIEXPORT jint JNICALL
+Java_com_haseeb_gaming_Engine_loadSystemImage(JNIEnv* env, jobject /* thiz */, jstring path) {
+    return AsJint(haseeb::engine::EngineRuntime::Instance().LoadSystemImage(JStringToStd(env, path)));
+}
+
+JNIEXPORT jint JNICALL
 Java_com_haseeb_gaming_Engine_start(
     JNIEnv* /* env */,
     jobject /* thiz */,
@@ -67,17 +52,16 @@ Java_com_haseeb_gaming_Engine_start(
     jint dpi,
     jint ram_mb
 ) {
-    return haseeb::engine::EngineRuntime::Instance().Start(api, width, height, dpi, ram_mb)
-        ? JNI_TRUE : JNI_FALSE;
+    return AsJint(haseeb::engine::EngineRuntime::Instance().Start(api, width, height, dpi, ram_mb));
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jint JNICALL
 Java_com_haseeb_gaming_Engine_attachSurface(JNIEnv* env, jobject /* thiz */, jobject surface) {
     ANativeWindow* window = surface ? ANativeWindow_fromSurface(env, surface) : nullptr;
-    haseeb::engine::EngineRuntime::Instance().AttachSurface(window);
+    return AsJint(haseeb::engine::EngineRuntime::Instance().AttachSurface(window));
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jint JNICALL
 Java_com_haseeb_gaming_Engine_sendTouch(
     JNIEnv* /* env */,
     jobject /* thiz */,
@@ -86,22 +70,27 @@ Java_com_haseeb_gaming_Engine_sendTouch(
     jint y,
     jint id
 ) {
-    haseeb::engine::EngineRuntime::Instance().SendTouch(action, x, y, id);
+    return AsJint(haseeb::engine::EngineRuntime::Instance().SendTouch(action, x, y, id));
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jint JNICALL
 Java_com_haseeb_gaming_Engine_sendKey(
     JNIEnv* /* env */,
     jobject /* thiz */,
     jint code,
     jboolean down
 ) {
-    haseeb::engine::EngineRuntime::Instance().SendKey(code, down == JNI_TRUE);
+    return AsJint(haseeb::engine::EngineRuntime::Instance().SendKey(code, down == JNI_TRUE));
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jint JNICALL
 Java_com_haseeb_gaming_Engine_sendText(JNIEnv* env, jobject /* thiz */, jstring text) {
-    haseeb::engine::EngineRuntime::Instance().SendText(JStringToStd(env, text));
+    return AsJint(haseeb::engine::EngineRuntime::Instance().SendText(JStringToStd(env, text)));
+}
+
+JNIEXPORT jint JNICALL
+Java_com_haseeb_gaming_Engine_setTargetFps(JNIEnv* /* env */, jobject /* thiz */, jint fps) {
+    return AsJint(haseeb::engine::EngineRuntime::Instance().SetTargetFps(fps));
 }
 
 JNIEXPORT jstring JNICALL
@@ -120,9 +109,9 @@ Java_com_haseeb_gaming_Engine_isRunning(JNIEnv* /* env */, jobject /* thiz */) {
     return haseeb::engine::EngineRuntime::Instance().IsRunning() ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jint JNICALL
 Java_com_haseeb_gaming_Engine_stop(JNIEnv* /* env */, jobject /* thiz */) {
-    haseeb::engine::EngineRuntime::Instance().Stop();
+    return AsJint(haseeb::engine::EngineRuntime::Instance().Stop());
 }
 
 } // extern "C"
