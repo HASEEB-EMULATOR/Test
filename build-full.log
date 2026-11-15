@@ -36,8 +36,8 @@ Installing Android SDK Platform-Tools in /home/runner/android-sdk/platform-tools
 > Task :app:packageDebugResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
-> Task :app:parseDebugLocalResources
 > Task :app:mergeDebugResources
+> Task :app:parseDebugLocalResources
 
 > Task :app:processDebugMainManifest
 /home/runner/work/Test/Test/app/src/main/AndroidManifest.xml:25:9-41 Warning:
@@ -52,297 +52,27 @@ The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml 
 > Task :app:compressDebugAssets
 > Task :app:desugarDebugFileDependencies
 > Task :app:processDebugJavaRes NO-SOURCE
-> Task :app:mergeDebugJavaResource
-> Task :app:checkDebugDuplicateClasses
-> Task :app:configureCMakeDebug[arm64-v8a]
 > Task :app:processDebugManifestForPackage
-> Task :app:mergeExtDexDebug
-> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJavaResource
 > Task :app:processDebugResources
-
+> Task :app:checkDebugDuplicateClasses
+> Task :app:compileDebugJavaWithJavac
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeLibDexDebug
+> Task :app:mergeProjectDexDebug
+> Task :app:configureCMakeDebug[arm64-v8a]
 > Task :app:buildCMakeDebug[arm64-v8a]
-C/C++: ninja: Entering directory `/home/runner/work/Test/Test/app/.cxx/Debug/73414y1y/arm64-v8a'
-C/C++: : && /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot -fPIC -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments    -Wl,-z,max-page-size=16384 -shared -Wl,-soname,libhaseeb_vm.so -o /home/runner/work/Test/Test/app/build/intermediates/cxx/Debug/73414y1y/obj/arm64-v8a/libhaseeb_vm.so CMakeFiles/haseeb_vm.dir/haseeb_vm_jni.cpp.o CMakeFiles/haseeb_vm.dir/src/engine_runtime.cpp.o  libhaseeb_vm_core.a  /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/26/libandroid.so  /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/26/liblog.so  -pthread  -latomic -lm && :
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::GicV3::SetPpiLevel(unsigned int, unsigned int, bool)
-C/C++: >>> referenced by cpu_sysregs.cpp:118 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:118)
-C/C++: >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::EvaluateTimersAndIrqs()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by cpu_sysregs.cpp:126 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:126)
-C/C++: >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::EvaluateTimersAndIrqs()) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::GicV3::HasPendingIrq(unsigned int) const
-C/C++: >>> referenced by cpu_sysregs.cpp:128 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:128)
-C/C++: >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::EvaluateTimersAndIrqs()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by cpu_sysregs.cpp:238 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:238)
-C/C++: >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::ExecuteMrs(unsigned int)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::GicV3::ReadSysReg(unsigned int, unsigned int)
-C/C++: >>> referenced by cpu_sysregs.cpp:236 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:236)
-C/C++: >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::ExecuteMrs(unsigned int)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::GicV3::WriteSysReg(unsigned int, unsigned int, unsigned long)
-C/C++: >>> referenced by cpu_sysregs.cpp:338 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:338)
-C/C++: >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::ExecuteMsrReg(unsigned int)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::GicV3::GicV3(unsigned int)
-C/C++: >>> referenced by machine.cpp:62 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:62)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::PsciController::PsciController(unsigned int)
-C/C++: >>> referenced by machine.cpp:63 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:63)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::Pl031Rtc::Pl031Rtc(std::__ndk1::function<void (bool)>)
-C/C++: >>> referenced by machine.cpp:61 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:61)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::Sp805Watchdog::Sp805Watchdog(std::__ndk1::function<void (bool)>)
-C/C++: >>> referenced by machine.cpp:61 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:61)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioBlkDevice
-C/C++: >>> referenced by virtio_devices.hpp:16 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:16)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by virtio_devices.hpp:16 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:16)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::VirtioNetDevice::VirtioNetDevice()
-C/C++: >>> referenced by machine.cpp:61 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:61)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::VirtioConsoleDevice::VirtioConsoleDevice(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)
-C/C++: >>> referenced by machine.cpp:61 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:61)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioRngDevice
-C/C++: >>> referenced by virtio_devices.hpp:111 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:111)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by virtio_devices.hpp:111 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:111)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-C/C++: ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioBalloonDevice
-C/C++: >>> referenced by virtio_devices.hpp:124 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:124)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by virtio_devices.hpp:124 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:124)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by virtio_devices.hpp:124 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:124)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtioBalloonDevice::~VirtioBalloonDevice()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced 3 more times
-C/C++: >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::VirtioMmioDevice::VirtioMmioDevice(haseeb::vm::GuestRam&, haseeb::vm::VirtioDeviceBackend*, std::__ndk1::function<void (bool)>)
-C/C++: >>> referenced by unique_ptr.h:601 (/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/__memory/unique_ptr.h:601)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by unique_ptr.h:601 (/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/__memory/unique_ptr.h:601)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by unique_ptr.h:601 (/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/__memory/unique_ptr.h:601)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced 2 more times
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::VirtioBlkDevice::~VirtioBlkDevice()
-C/C++: >>> referenced by machine.cpp:71 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:71)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by machine.cpp:75 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:75)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioConsoleDevice
-C/C++: >>> referenced by virtio_devices.hpp:81 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:81)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtioConsoleDevice::~VirtioConsoleDevice()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by virtio_devices.hpp:81 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:81)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtioConsoleDevice::~VirtioConsoleDevice()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by virtio_devices.hpp:81 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:81)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced 1 more times
-C/C++: >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-C/C++: ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioNetDevice
-C/C++: >>> referenced by virtio_devices.hpp:51 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:51)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtioNetDevice::~VirtioNetDevice()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by virtio_devices.hpp:51 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:51)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtioNetDevice::~VirtioNetDevice()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by virtio_devices.hpp:51 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:51)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced 1 more times
-C/C++: >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-C/C++: ld.lld: error: undefined symbol: vtable for haseeb::vm::Sp805Watchdog
-C/C++: >>> referenced by sp805_wdt.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/sp805_wdt.hpp:12)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::Sp805Watchdog::~Sp805Watchdog()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by sp805_wdt.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/sp805_wdt.hpp:12)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::Sp805Watchdog::~Sp805Watchdog()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by sp805_wdt.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/sp805_wdt.hpp:12)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced 1 more times
-C/C++: >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-C/C++: ld.lld: error: undefined symbol: vtable for haseeb::vm::Pl031Rtc
-C/C++: >>> referenced by pl031_rtc.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/pl031_rtc.hpp:12)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::Pl031Rtc::~Pl031Rtc()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by pl031_rtc.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/pl031_rtc.hpp:12)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::Pl031Rtc::~Pl031Rtc()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by pl031_rtc.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/pl031_rtc.hpp:12)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced 1 more times
-C/C++: >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-C/C++: ld.lld: error: undefined symbol: haseeb::vm::Pl031Rtc::SetIrqCallback(std::__ndk1::function<void (bool)>)
-C/C++: >>> referenced by machine.cpp:87 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:87)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::Shutdown()) in archive libhaseeb_vm_core.a
-C/C++: >>> referenced by machine.cpp:160 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:160)
-C/C++: >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::InitializeAndStage(haseeb::vm::MachineBootConfig const&, haseeb::vm::ParsedBootImage const*, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>>&)) in archive libhaseeb_vm_core.a
-C/C++: ld.lld: error: too many errors emitted, stopping now (use --error-limit=0 to see all errors)
-C/C++: clang++: error: linker command failed with exit code 1 (use -v to see invocation)
-C/C++: ninja: build stopped: subcommand failed.
-
-> Task :app:buildCMakeDebug[arm64-v8a] FAILED
+> Task :app:mergeDebugJniLibFolders
+> Task :app:validateSigningDebug FAILED
+> Task :app:mergeDebugNativeLibs
+> Task :app:mergeExtDexDebug
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:buildCMakeDebug[arm64-v8a]'.
-> com.android.ide.common.process.ProcessException: ninja: Entering directory `/home/runner/work/Test/Test/app/.cxx/Debug/73414y1y/arm64-v8a'
-  [1/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/mmu_tlb.cpp.o
-  [2/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/guest_ram.cpp.o
-  [3/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/pl011_uart.cpp.o
-  [4/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/boot_image.cpp.o
-  [5/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_sysregs.cpp.o
-  [6/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_neon.cpp.o
-  [7/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/dbt_cache.cpp.o
-  [8/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_core.cpp.o
-  [9/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_mem_atomics.cpp.o
-  [10/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/fdt_builder.cpp.o
-  [11/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/ext4_reader.cpp.o
-  [12/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/property_service.cpp.o
-  [13/19] Building CXX object CMakeFiles/haseeb_vm.dir/haseeb_vm_jni.cpp.o
-  [14/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/elf64_loader.cpp.o
-  [15/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/machine.cpp.o
-  [16/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/prop_area.cpp.o
-  [17/19] Linking CXX static library libhaseeb_vm_core.a
-  [18/19] Building CXX object CMakeFiles/haseeb_vm.dir/src/engine_runtime.cpp.o
-  [19/19] Linking CXX shared library /home/runner/work/Test/Test/app/build/intermediates/cxx/Debug/73414y1y/obj/arm64-v8a/libhaseeb_vm.so
-  FAILED: /home/runner/work/Test/Test/app/build/intermediates/cxx/Debug/73414y1y/obj/arm64-v8a/libhaseeb_vm.so 
-  : && /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot -fPIC -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments    -Wl,-z,max-page-size=16384 -shared -Wl,-soname,libhaseeb_vm.so -o /home/runner/work/Test/Test/app/build/intermediates/cxx/Debug/73414y1y/obj/arm64-v8a/libhaseeb_vm.so CMakeFiles/haseeb_vm.dir/haseeb_vm_jni.cpp.o CMakeFiles/haseeb_vm.dir/src/engine_runtime.cpp.o  libhaseeb_vm_core.a  /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/26/libandroid.so  /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/26/liblog.so  -pthread  -latomic -lm && :
-  ld.lld: error: undefined symbol: haseeb::vm::GicV3::SetPpiLevel(unsigned int, unsigned int, bool)
-  >>> referenced by cpu_sysregs.cpp:118 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:118)
-  >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::EvaluateTimersAndIrqs()) in archive libhaseeb_vm_core.a
-  >>> referenced by cpu_sysregs.cpp:126 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:126)
-  >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::EvaluateTimersAndIrqs()) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: haseeb::vm::GicV3::HasPendingIrq(unsigned int) const
-  >>> referenced by cpu_sysregs.cpp:128 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:128)
-  >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::EvaluateTimersAndIrqs()) in archive libhaseeb_vm_core.a
-  >>> referenced by cpu_sysregs.cpp:238 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:238)
-  >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::ExecuteMrs(unsigned int)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: haseeb::vm::GicV3::ReadSysReg(unsigned int, unsigned int)
-  >>> referenced by cpu_sysregs.cpp:236 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:236)
-  >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::ExecuteMrs(unsigned int)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: haseeb::vm::GicV3::WriteSysReg(unsigned int, unsigned int, unsigned long)
-  >>> referenced by cpu_sysregs.cpp:338 (/home/runner/work/Test/Test/app/src/main/cpp/src/cpu_sysregs.cpp:338)
-  >>>               cpu_sysregs.cpp.o:(haseeb::vm::AArch64CpuCore::ExecuteMsrReg(unsigned int)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: haseeb::vm::GicV3::GicV3(unsigned int)
-  >>> referenced by machine.cpp:62 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:62)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: haseeb::vm::PsciController::PsciController(unsigned int)
-  >>> referenced by machine.cpp:63 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:63)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: haseeb::vm::Pl031Rtc::Pl031Rtc(std::__ndk1::function<void (bool)>)
-  >>> referenced by machine.cpp:61 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:61)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: haseeb::vm::Sp805Watchdog::Sp805Watchdog(std::__ndk1::function<void (bool)>)
-  >>> referenced by machine.cpp:61 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:61)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioBlkDevice
-  >>> referenced by virtio_devices.hpp:16 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:16)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> referenced by virtio_devices.hpp:16 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:16)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-  
-  ld.lld: error: undefined symbol: haseeb::vm::VirtioNetDevice::VirtioNetDevice()
-  >>> referenced by machine.cpp:61 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:61)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: haseeb::vm::VirtioConsoleDevice::VirtioConsoleDevice(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)
-  >>> referenced by machine.cpp:61 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:61)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioRngDevice
-  >>> referenced by virtio_devices.hpp:111 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:111)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> referenced by virtio_devices.hpp:111 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:111)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-  
-  ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioBalloonDevice
-  >>> referenced by virtio_devices.hpp:124 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:124)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> referenced by virtio_devices.hpp:124 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:124)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> referenced by virtio_devices.hpp:124 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:124)
-  >>>               machine.cpp.o:(haseeb::vm::VirtioBalloonDevice::~VirtioBalloonDevice()) in archive libhaseeb_vm_core.a
-  >>> referenced 3 more times
-  >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-  
-  ld.lld: error: undefined symbol: haseeb::vm::VirtioMmioDevice::VirtioMmioDevice(haseeb::vm::GuestRam&, haseeb::vm::VirtioDeviceBackend*, std::__ndk1::function<void (bool)>)
-  >>> referenced by unique_ptr.h:601 (/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/__memory/unique_ptr.h:601)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> referenced by unique_ptr.h:601 (/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/__memory/unique_ptr.h:601)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> referenced by unique_ptr.h:601 (/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/__memory/unique_ptr.h:601)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> referenced 2 more times
-  
-  ld.lld: error: undefined symbol: haseeb::vm::VirtioBlkDevice::~VirtioBlkDevice()
-  >>> referenced by machine.cpp:71 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:71)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::VirtualMachineSkeleton(std::__ndk1::function<void (std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>> const&)>)) in archive libhaseeb_vm_core.a
-  >>> referenced by machine.cpp:75 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:75)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioConsoleDevice
-  >>> referenced by virtio_devices.hpp:81 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:81)
-  >>>               machine.cpp.o:(haseeb::vm::VirtioConsoleDevice::~VirtioConsoleDevice()) in archive libhaseeb_vm_core.a
-  >>> referenced by virtio_devices.hpp:81 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:81)
-  >>>               machine.cpp.o:(haseeb::vm::VirtioConsoleDevice::~VirtioConsoleDevice()) in archive libhaseeb_vm_core.a
-  >>> referenced by virtio_devices.hpp:81 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:81)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-  >>> referenced 1 more times
-  >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-  
-  ld.lld: error: undefined symbol: vtable for haseeb::vm::VirtioNetDevice
-  >>> referenced by virtio_devices.hpp:51 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:51)
-  >>>               machine.cpp.o:(haseeb::vm::VirtioNetDevice::~VirtioNetDevice()) in archive libhaseeb_vm_core.a
-  >>> referenced by virtio_devices.hpp:51 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:51)
-  >>>               machine.cpp.o:(haseeb::vm::VirtioNetDevice::~VirtioNetDevice()) in archive libhaseeb_vm_core.a
-  >>> referenced by virtio_devices.hpp:51 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/virtio_devices.hpp:51)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-  >>> referenced 1 more times
-  >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-  
-  ld.lld: error: undefined symbol: vtable for haseeb::vm::Sp805Watchdog
-  >>> referenced by sp805_wdt.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/sp805_wdt.hpp:12)
-  >>>               machine.cpp.o:(haseeb::vm::Sp805Watchdog::~Sp805Watchdog()) in archive libhaseeb_vm_core.a
-  >>> referenced by sp805_wdt.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/sp805_wdt.hpp:12)
-  >>>               machine.cpp.o:(haseeb::vm::Sp805Watchdog::~Sp805Watchdog()) in archive libhaseeb_vm_core.a
-  >>> referenced by sp805_wdt.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/sp805_wdt.hpp:12)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-  >>> referenced 1 more times
-  >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-  
-  ld.lld: error: undefined symbol: vtable for haseeb::vm::Pl031Rtc
-  >>> referenced by pl031_rtc.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/pl031_rtc.hpp:12)
-  >>>               machine.cpp.o:(haseeb::vm::Pl031Rtc::~Pl031Rtc()) in archive libhaseeb_vm_core.a
-  >>> referenced by pl031_rtc.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/pl031_rtc.hpp:12)
-  >>>               machine.cpp.o:(haseeb::vm::Pl031Rtc::~Pl031Rtc()) in archive libhaseeb_vm_core.a
-  >>> referenced by pl031_rtc.hpp:12 (/home/runner/work/Test/Test/app/src/main/cpp/include/haseeb/pl031_rtc.hpp:12)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::~VirtualMachineSkeleton()) in archive libhaseeb_vm_core.a
-  >>> referenced 1 more times
-  >>> the vtable symbol may be undefined because the class is missing its key function (see https://lld.llvm.org/missingkeyfunction)
-  
-  ld.lld: error: undefined symbol: haseeb::vm::Pl031Rtc::SetIrqCallback(std::__ndk1::function<void (bool)>)
-  >>> referenced by machine.cpp:87 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:87)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::Shutdown()) in archive libhaseeb_vm_core.a
-  >>> referenced by machine.cpp:160 (/home/runner/work/Test/Test/app/src/main/cpp/src/machine.cpp:160)
-  >>>               machine.cpp.o:(haseeb::vm::VirtualMachineSkeleton::InitializeAndStage(haseeb::vm::MachineBootConfig const&, haseeb::vm::ParsedBootImage const*, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>>&)) in archive libhaseeb_vm_core.a
-  
-  ld.lld: error: too many errors emitted, stopping now (use --error-limit=0 to see all errors)
-  clang++: error: linker command failed with exit code 1 (use -v to see invocation)
-  ninja: build stopped: subcommand failed.
-  
-  C++ build system [build] failed while executing:
-      /home/runner/android-sdk/cmake/3.22.1/bin/ninja \
-        -C \
-        /home/runner/work/Test/Test/app/.cxx/Debug/73414y1y/arm64-v8a \
-        haseeb_vm
-    from /home/runner/work/Test/Test/app
+Execution failed for task ':app:validateSigningDebug'.
+> Keystore file '/home/runner/work/Test/Test/debug.keystore' not found for signing config 'debugConfig'.
 
 * Try:
 > Run with --stacktrace option to get the stack trace.
@@ -350,5 +80,5 @@ Execution failed for task ':app:buildCMakeDebug[arm64-v8a]'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 3m 20s
-25 actionable tasks: 25 executed
+BUILD FAILED in 3m 12s
+32 actionable tasks: 32 executed
