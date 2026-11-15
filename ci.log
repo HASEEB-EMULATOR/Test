@@ -1,10 +1,13 @@
 [1] catalog -> agp 8.7.3 / kotlin 2.0.21
 [2] root build cleaned
 [3] app build: compileSdk 35 + ndk 27
-[4] CMake: prop_area + property_service + elf64_loader added back
+[4] CMake already has them
 [5] no duplicate
 [7] secrets/googleServices blocks removed; leftovers: none
+[8] cleaned build-full.log
+[8] cleaned ci.log
 [8] .gitignore updated
+[9] gradle.properties: ['android.useAndroidX=true', 'android.enableJetifier=true']
 
 --- result ---
       alias(libs.plugins.android.application)
