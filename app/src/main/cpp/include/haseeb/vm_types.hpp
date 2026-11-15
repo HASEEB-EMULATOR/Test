@@ -15,6 +15,7 @@ inline constexpr uint64_t kGicDistBase      = 0x08000000ULL; // 64 KiB
 inline constexpr uint64_t kGicRedistBase    = 0x080A0000ULL; // 128 KiB * vCPUs
 inline constexpr uint64_t kPl011UartBase    = 0x09000000ULL; // 4 KiB
 inline constexpr uint64_t kPl031RtcBase     = 0x09010000ULL; // 4 KiB
+inline constexpr uint64_t kSp805WdtBase     = 0x09020000ULL; // 4 KiB
 inline constexpr uint64_t kVirtioMmioBase   = 0x0A000000ULL; // 8 slots * 0x200 bytes
 inline constexpr uint64_t kVirtioMmioStride = 0x00000200ULL;
 inline constexpr uint32_t kVirtioMmioCount  = 8u;

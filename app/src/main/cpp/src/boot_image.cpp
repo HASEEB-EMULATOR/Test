@@ -1,4 +1,6 @@
 #include "haseeb/boot_image.hpp"
+#include "haseeb/compression.hpp"
+#include "haseeb/cpio_reader.hpp"
 
 #include <algorithm>
 #include <cerrno>
@@ -143,11 +145,55 @@ Arm64KernelImageInfo BootImageParser::InspectKernelImage(const std::vector<uint8
         uint32_t m = ReadLE32(kernel_bytes.data());
         if (m == 0x184D2204u) {
             info.compression = KernelCompression::Lz4Frame;
-        } else if (m == 0x184C2102u) {
+        } else if (m == 0x184C2102u || m == 0x184C2103u) {
             info.compression = KernelCompression::Lz4Legacy;
         }
     }
     return info;
+}
+
+VmError BootImageParser::DecompressKernelAndInspect(ParsedBootImage& in_out_boot,
+                                                    std::string& out_error) {
+    if (in_out_boot.kernel.empty()) {
+        out_error = "Kernel payload is empty";
+        return VmError::GuestKernelInvalid;
+    }
+    in_out_boot.kernel_info = InspectKernelImage(in_out_boot.kernel);
+    if (in_out_boot.kernel_info.valid_arm64_magic) {
+        return VmError::Ok;
+    }
+
+    ArchiveFormat fmt = ArchiveFormat::Unknown;
+    std::vector<uint8_t> decompressed;
+    if (!CompressionCodec::DecompressAuto(in_out_boot.kernel, decompressed, fmt, out_error)) {
+        return VmError::GuestKernelInvalid;
+    }
+    if (fmt == ArchiveFormat::Uncompressed || fmt == ArchiveFormat::Unknown) {
+        out_error = "Kernel image lacks ARM\\x64 header and is not Gzip/LZ4 compressed";
+        return VmError::GuestKernelInvalid;
+    }
+
+    Arm64KernelImageInfo info = InspectKernelImage(decompressed);
+    if (!info.valid_arm64_magic) {
+        out_error = "Decompressed kernel does not contain valid ARM\\x64 Image header";
+        return VmError::GuestKernelInvalid;
+    }
+    in_out_boot.kernel = std::move(decompressed);
+    in_out_boot.kernel_info = info;
+    return VmError::Ok;
+}
+
+VmError BootImageParser::DecompressRamdisk(const std::vector<uint8_t>& ramdisk_bytes,
+                                           std::vector<uint8_t>& out_cpio,
+                                           std::string& out_error) {
+    out_cpio.clear();
+    if (ramdisk_bytes.empty()) return VmError::Ok;
+
+    ArchiveFormat fmt = ArchiveFormat::Unknown;
+    if (!CompressionCodec::DecompressAuto(ramdisk_bytes, out_cpio, fmt, out_error)) {
+        return VmError::InvalidBootImage;
+    }
+    return VmError::Ok;
 }
 
 void BootImageParser::ScanRamdiskForMagisk(ParsedBootImage& boot_img) {
@@ -157,19 +203,46 @@ void BootImageParser::ScanRamdiskForMagisk(ParsedBootImage& boot_img) {
     const std::vector<uint8_t>& rd = boot_img.ramdisk;
     if (rd.empty()) return;
 
-    const bool is_newc_cpio = (rd.size() >= 6 && std::memcmp(rd.data(), "070701", 6) == 0);
-    if (ContainsAscii(rd, "magiskinit")) {
+    std::vector<uint8_t> decompressed;
+    ArchiveFormat fmt = ArchiveFormat::Unknown;
+    std::string err;
+    const std::vector<uint8_t>* scan_buf = &rd;
+    if (CompressionCodec::DecompressAuto(rd, decompressed, fmt, err) &&
+        (fmt == ArchiveFormat::Gzip || fmt == ArchiveFormat::Lz4Frame || fmt == ArchiveFormat::Lz4Legacy)) {
+        scan_buf = &decompressed;
+    }
+
+    std::vector<CpioEntry> entries;
+    if (CpioArchive::Parse(*scan_buf, entries, err)) {
+        if (CpioArchive::FindEntry(entries, "magiskinit") != nullptr) {
+            boot_img.magisk_detected = true;
+            boot_img.magisk_evidence = "Found 'magiskinit' binary in ramdisk cpio";
+            return;
+        }
+        if (CpioArchive::FindEntry(entries, ".backup/.magisk") != nullptr) {
+            boot_img.magisk_detected = true;
+            boot_img.magisk_evidence = "Found '.backup/.magisk' config in ramdisk cpio";
+            return;
+        }
+        for (const auto& e : entries) {
+            if (e.name.rfind("overlay.d/", 0) == 0) {
+                boot_img.magisk_detected = true;
+                boot_img.magisk_evidence = "Found 'overlay.d/' Magisk overlay in ramdisk cpio";
+                return;
+            }
+        }
+    }
+
+    // Fallback raw scan for compact/synthetic cpio stubs
+    if (ContainsAscii(*scan_buf, "magiskinit")) {
         boot_img.magisk_detected = true;
         boot_img.magisk_evidence = "Found 'magiskinit' entry in ramdisk cpio";
         return;
     }
-    if (ContainsAscii(rd, ".backup/.magisk") || ContainsAscii(rd, "overlay.d/")) {
+    if (ContainsAscii(*scan_buf, ".backup/.magisk") || ContainsAscii(*scan_buf, "overlay.d/")) {
         boot_img.magisk_detected = true;
         boot_img.magisk_evidence = "Found Magisk .backup/.magisk or overlay.d structure";
         return;
-    }
-    if (!is_newc_cpio && rd.size() >= 2 && rd[0] == 0x1Fu && rd[1] == 0x8Bu) {
-        boot_img.magisk_evidence = "Gzip-compressed ramdisk staged (checked at kernel initramfs unpack)";
     }
 }
 

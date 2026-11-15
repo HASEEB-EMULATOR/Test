@@ -263,6 +263,15 @@ bool FdtBuilder::Build(const FdtBuildParams& params,
     w.PropString("clock-names", "apb_pclk");
     w.EndNode();
 
+    // /watchdog@9020000
+    w.BeginNode("watchdog@9020000");
+    w.PropStringList("compatible", {"arm,sp805", "arm,primecell"});
+    w.PropRegPairs64("reg", {{kSp805WdtBase, 0x1000ULL}});
+    w.PropU32Array("interrupts", {0u, 3u, 4u});
+    w.PropU32Array("clocks", {kClkPhandle, kClkPhandle});
+    w.PropStringList("clock-names", {"wdogclk", "apb_pclk"});
+    w.EndNode();
+
     // /virtio_mmio@a000000..a000e00 (8 slots for M3+ block/net/console/gpu/input/snd)
     for (uint32_t slot = 0; slot < kVirtioMmioCount; ++slot) {
         uint64_t addr = kVirtioMmioBase + static_cast<uint64_t>(slot) * kVirtioMmioStride;

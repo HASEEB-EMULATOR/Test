@@ -12,6 +12,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <thread>
 
 namespace haseeb::engine {
 
@@ -65,6 +66,7 @@ private:
 
     void AppendLog(const std::string& level, const std::string& msg);
     void PresentBootFrame();
+    void RunGuestLoop();
 
     mutable std::mutex mutex_;
     std::mutex log_mutex_;
@@ -83,6 +85,7 @@ private:
     vm::VirtualMachineSkeleton machine_;
 
     ANativeWindow* window_ = nullptr;
+    std::thread guest_thread_;
     std::atomic<bool> running_{false};
     std::atomic<int> target_fps_{60};
     std::atomic<float> measured_fps_{0.0f};

@@ -1,4 +1,5 @@
 #include "haseeb/cpu_core.hpp"
+#include "haseeb/gicv3.hpp"
 
 #include <chrono>
 
@@ -103,6 +104,30 @@ uint64_t AArch64CpuCore::ReadSystemTimerTicks() const {
     return (static_cast<uint64_t>(ns) >> 4) + state_.timer_offset_ticks;
 }
 
+void AArch64CpuCore::EvaluateTimersAndIrqs() {
+    if (!gic_) return;
+    const uint64_t pct = ReadSystemTimerTicks();
+    const uint64_t vct = pct - state_.sys.cntvoff_el2;
+
+    const bool p_en = (state_.sys.cntp_ctl_el0 & 1ULL) != 0;
+    const bool p_imask = (state_.sys.cntp_ctl_el0 & 2ULL) != 0;
+    const bool p_met = p_en && (pct >= state_.sys.cntp_cval_el0);
+    if (p_met) state_.sys.cntp_ctl_el0 |= 4ULL;
+    else state_.sys.cntp_ctl_el0 &= ~4ULL;
+    // INTID 30 = Non-secure Physical Timer PPI 14 (16 + 14)
+    gic_->SetPpiLevel(state_.cpu_id, 30u, p_met && !p_imask);
+
+    const bool v_en = (state_.sys.cntv_ctl_el0 & 1ULL) != 0;
+    const bool v_imask = (state_.sys.cntv_ctl_el0 & 2ULL) != 0;
+    const bool v_met = v_en && (vct >= state_.sys.cntv_cval_el0);
+    if (v_met) state_.sys.cntv_ctl_el0 |= 4ULL;
+    else state_.sys.cntv_ctl_el0 &= ~4ULL;
+    // INTID 27 = Virtual Timer PPI 11 (16 + 11)
+    gic_->SetPpiLevel(state_.cpu_id, 27u, v_met && !v_imask);
+
+    state_.pending_irq = gic_->HasPendingIrq(state_.cpu_id);
+}
+
 bool AArch64CpuCore::ExecuteMrs(uint32_t insn) {
     const uint8_t rt = static_cast<uint8_t>(insn & 31u);
     const uint32_t op1 = (insn >> 16) & 7u;
@@ -119,7 +144,7 @@ bool AArch64CpuCore::ExecuteMrs(uint32_t insn) {
         case kMidrEl1:     val = 0x411FD050ULL; break; // ARM Cortex-A55 r1p0
         case kMpidrEl1:    val = 0x80000000ULL | state_.cpu_id; break;
         case kRevidrEl1:   val = 0; break;
-        case kIdPfr0El1:   val = 0x0000000000000011ULL; break; // EL0/EL1 AArch64 only, FP + AdvSIMD
+        case kIdPfr0El1:   val = 0x0000000001000011ULL; break; // EL0/EL1 AArch64, FP/AdvSIMD, GIC sysreg v3/v4
         case kIdPfr1El1:   val = 0x0000000000000000ULL; break;
         case kIdDfr0El1:   val = 0x0000000010305106ULL; break;
         case kIdIsar0El1:  val = 0x0000000000211120ULL; break; // LSE atomics + CRC32
@@ -173,19 +198,45 @@ bool AArch64CpuCore::ExecuteMrs(uint32_t insn) {
         case kCntpctEl0:   val = ReadSystemTimerTicks(); break;
         case kCntvctEl0:   val = ReadSystemTimerTicks() - state_.sys.cntvoff_el2; break;
         case kCntkctlEl1:  val = state_.sys.cntkctl_el1; break;
-        case kCntpCtlEl0:  val = state_.sys.cntp_ctl_el0; break;
+        case kCntpCtlEl0: {
+            EvaluateTimersAndIrqs();
+            val = state_.sys.cntp_ctl_el0;
+            break;
+        }
         case kCntpCvalEl0: val = state_.sys.cntp_cval_el0; break;
         case kCntpTvalEl0: {
             int64_t diff = static_cast<int64_t>(state_.sys.cntp_cval_el0 - ReadSystemTimerTicks());
             val = static_cast<uint32_t>(diff);
             break;
         }
-        case kCntvCtlEl0:  val = state_.sys.cntv_ctl_el0; break;
+        case kCntvCtlEl0: {
+            EvaluateTimersAndIrqs();
+            val = state_.sys.cntv_ctl_el0;
+            break;
+        }
         case kCntvCvalEl0: val = state_.sys.cntv_cval_el0; break;
         case kCntvTvalEl0: {
             uint64_t vct = ReadSystemTimerTicks() - state_.sys.cntvoff_el2;
             int64_t diff = static_cast<int64_t>(state_.sys.cntv_cval_el0 - vct);
             val = static_cast<uint32_t>(diff);
+            break;
+        }
+        case GicV3::kIccPmrEl1:
+        case GicV3::kIccIar0El1:
+        case GicV3::kIccHppir0El1:
+        case GicV3::kIccBpr0El1:
+        case GicV3::kIccRprEl1:
+        case GicV3::kIccIar1El1:
+        case GicV3::kIccHppir1El1:
+        case GicV3::kIccBpr1El1:
+        case GicV3::kIccCtlrEl1:
+        case GicV3::kIccSreEl1:
+        case GicV3::kIccIgrpen0El1:
+        case GicV3::kIccIgrpen1El1: {
+            val = gic_ ? gic_->ReadSysReg(state_.cpu_id, key) : 0ULL;
+            if (gic_ && (key == GicV3::kIccIar0El1 || key == GicV3::kIccIar1El1)) {
+                state_.pending_irq = gic_->HasPendingIrq(state_.cpu_id);
+            }
             break;
         }
         default:
@@ -253,19 +304,40 @@ bool AArch64CpuCore::ExecuteMsrReg(uint32_t insn) {
         case kMdscrEl1:      state_.sys.mdscr_el1 = val; break;
         case kOslarEl1:      break;
         case kCntkctlEl1:    state_.sys.cntkctl_el1 = val; break;
-        case kCntpCtlEl0:    state_.sys.cntp_ctl_el0 = val & 7ULL; break;
-        case kCntpCvalEl0:   state_.sys.cntp_cval_el0 = val; break;
+        case kCntpCtlEl0:    state_.sys.cntp_ctl_el0 = val & 3ULL; EvaluateTimersAndIrqs(); break;
+        case kCntpCvalEl0:   state_.sys.cntp_cval_el0 = val; EvaluateTimersAndIrqs(); break;
         case kCntpTvalEl0: {
             int64_t tval = static_cast<int32_t>(val & 0xFFFFFFFFULL);
             state_.sys.cntp_cval_el0 = ReadSystemTimerTicks() + static_cast<uint64_t>(tval);
+            EvaluateTimersAndIrqs();
             break;
         }
-        case kCntvCtlEl0:    state_.sys.cntv_ctl_el0 = val & 7ULL; break;
-        case kCntvCvalEl0:   state_.sys.cntv_cval_el0 = val; break;
+        case kCntvCtlEl0:    state_.sys.cntv_ctl_el0 = val & 3ULL; EvaluateTimersAndIrqs(); break;
+        case kCntvCvalEl0:   state_.sys.cntv_cval_el0 = val; EvaluateTimersAndIrqs(); break;
         case kCntvTvalEl0: {
             int64_t tval = static_cast<int32_t>(val & 0xFFFFFFFFULL);
             uint64_t vct = ReadSystemTimerTicks() - state_.sys.cntvoff_el2;
             state_.sys.cntv_cval_el0 = vct + static_cast<uint64_t>(tval);
+            EvaluateTimersAndIrqs();
+            break;
+        }
+        case GicV3::kIccPmrEl1:
+        case GicV3::kIccEoir0El1:
+        case GicV3::kIccBpr0El1:
+        case GicV3::kIccDirEl1:
+        case GicV3::kIccSgi1rEl1:
+        case GicV3::kIccAsgi1rEl1:
+        case GicV3::kIccSgi0rEl1:
+        case GicV3::kIccEoir1El1:
+        case GicV3::kIccBpr1El1:
+        case GicV3::kIccCtlrEl1:
+        case GicV3::kIccSreEl1:
+        case GicV3::kIccIgrpen0El1:
+        case GicV3::kIccIgrpen1El1: {
+            if (gic_) {
+                gic_->WriteSysReg(state_.cpu_id, key, val);
+                EvaluateTimersAndIrqs();
+            }
             break;
         }
         default:

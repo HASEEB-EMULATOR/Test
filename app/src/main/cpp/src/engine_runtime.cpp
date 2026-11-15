@@ -130,6 +130,7 @@ vm::VmError EngineRuntime::Start(int api, int width, int height, int dpi, int ra
     mcfg.extra_cmdline = "androidboot.selinux=permissive haseeb.api=" + std::to_string(api);
 
     std::string err;
+    machine_.SetExt4Reader(has_system_image_ ? &system_ext4_ : nullptr);
     const vm::ParsedBootImage* boot_ptr = has_boot_image_ ? &boot_image_ : nullptr;
     vm::VmError stage_err = machine_.InitializeAndStage(mcfg, boot_ptr, err);
     if (stage_err != vm::VmError::Ok) {
@@ -137,22 +138,60 @@ vm::VmError EngineRuntime::Start(int api, int width, int height, int dpi, int ra
         return stage_err;
     }
 
+    if (guest_thread_.joinable()) {
+        guest_thread_.join();
+    }
+
     running_.store(true);
     measured_fps_.store(0.0f);
 
-    AppendLog("INFO", "M1 Full-System VM staged (RAM=" + std::to_string(ram_mb) +
+    AppendLog("INFO", "Full-System VM staged (RAM=" + std::to_string(ram_mb) +
               " MiB via memfd, FDT @0x" + std::to_string(machine_.DtbGuestAddr()) + ")");
 
     vm::VmError boot_res = machine_.RunBootStubUntilHalt();
     if (boot_res != vm::VmError::Ok) {
-        AppendLog("ERROR", "M1 bootloader stub trap: " + std::string(vm::VmErrorToString(boot_res)));
+        AppendLog("ERROR", "Bootloader stub trap: " + std::string(vm::VmErrorToString(boot_res)));
         machine_.Shutdown();
         running_.store(false);
         return boot_res;
     }
 
     PresentBootFrame();
+
+    // Launch M4 guest kernel / EL0 init+sh execution loop when a runnable target exists
+    if (has_boot_image_ || has_system_image_) {
+        std::string target;
+        std::string launch_err;
+        vm::VmError launch_res = machine_.BootGuest(
+            config_.magisk_prompt_enabled, target, launch_err);
+        if (launch_res == vm::VmError::Ok) {
+            AppendLog("INFO", "Booting guest target [" + target + "] on AArch64 DBT/MMU core");
+            guest_thread_ = std::thread(&EngineRuntime::RunGuestLoop, this);
+        } else {
+            AppendLog("INFO", "Guest ELF/kernel handoff skipped (" + launch_err + "); staying ready");
+        }
+    }
     return vm::VmError::Ok;
+}
+
+void EngineRuntime::RunGuestLoop() {
+    while (running_.load()) {
+        vm::VmError step_res = machine_.StepGuest(25000ULL);
+        const auto& st = machine_.CpuState();
+        if (step_res != vm::VmError::Ok) {
+            AppendLog("ERROR", "Guest CPU trap: " + std::string(vm::VmErrorToString(step_res)));
+            break;
+        }
+        if (st.halted || machine_.ResetRequested()) {
+            const int exit_code = machine_.Supervisor() ? machine_.Supervisor()->ExitStatus() : 0;
+            AppendLog("INFO", "Guest execution halted (exit=" + std::to_string(exit_code) +
+                      ", insns=" + std::to_string(st.instructions_executed) + ")");
+            break;
+        }
+        if (st.stop_reason == vm::CpuStopReason::WfiWait) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        }
+    }
 }
 
 vm::VmError EngineRuntime::AttachSurface(ANativeWindow* window) {
@@ -243,7 +282,12 @@ std::string EngineRuntime::ReadLog(int max_bytes) {
 vm::VmError EngineRuntime::Stop() {
     std::lock_guard<std::mutex> lock(mutex_);
     if (!running_.exchange(false)) {
+        if (guest_thread_.joinable()) guest_thread_.join();
         return vm::VmError::NotRunning;
+    }
+    machine_.Cpu().RequestStop();
+    if (guest_thread_.joinable()) {
+        guest_thread_.join();
     }
     machine_.Shutdown();
     system_ext4_.Close();
@@ -255,7 +299,7 @@ vm::VmError EngineRuntime::Stop() {
         }
     }
     measured_fps_.store(0.0f);
-    AppendLog("INFO", "M1 VM stopped cleanly");
+    AppendLog("INFO", "VM stopped cleanly");
     return vm::VmError::Ok;
 }
 

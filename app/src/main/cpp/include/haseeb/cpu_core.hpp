@@ -11,6 +11,8 @@
 
 namespace haseeb::vm {
 
+class GicV3;
+
 // Hypervisor/Supervisor HVC/SMC callback used by M3 PSCI / Virtio / Paravirt traps
 struct HypercallResult {
     bool handled = false;
@@ -27,6 +29,8 @@ public:
 
     void Reset(uint64_t entry_pc, uint64_t initial_sp = 0, uint8_t start_el = 1);
     void SetHypercallHandler(HypercallHandler handler) { hvc_handler_ = std::move(handler); }
+    void SetGic(GicV3* gic) { gic_ = gic; }
+    void EvaluateTimersAndIrqs();
 
     // Execute up to max_insns guest instructions; returns VmError::Ok on clean halt/budget/WFI,
     // or VmError::ExecutionTrap if an unhandled fatal condition occurs.
@@ -49,7 +53,6 @@ private:
     uint64_t ContextTag() const;
     TranslatedBlock* GetOrTranslateBlock(uint64_t guest_va, bool& out_faulted);
 
-    // Guest memory operations routed through Stage-1 MMU/TLB -> RAM or MmioBus + SMC invalidation
     bool ReadMem(uint64_t va, unsigned size_bytes, uint64_t& out_val, bool acquire = false);
     bool WriteMem(uint64_t va, unsigned size_bytes, uint64_t val, bool release = false);
     bool ReadMem128(uint64_t va, uint64_t& lo, uint64_t& hi);
@@ -62,7 +65,6 @@ private:
     void SetFlagsAdd32(uint32_t op1, uint32_t op2, uint32_t res, bool c_in);
     void SetFlagsSub32(uint32_t op1, uint32_t op2, uint32_t res, bool borrow_in);
 
-    // Executes one decoded instruction; sets next_pc and returns false if exception/halt occurred
     bool ExecuteInstruction(const DecodedInsn& insn, uint64_t& next_pc);
     bool ExecuteLoadStoreImm(const DecodedInsn& d);
     bool ExecuteLoadStoreReg(const DecodedInsn& d);
@@ -87,6 +89,7 @@ private:
     CpuState state_{};
     Arm64Mmu mmu_;
     TranslationCache cache_;
+    GicV3* gic_ = nullptr;
     HypercallHandler hvc_handler_;
     bool stop_requested_ = false;
 };

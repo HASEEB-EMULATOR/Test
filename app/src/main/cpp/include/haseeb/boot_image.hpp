@@ -59,6 +59,10 @@ public:
                                       std::string& out_error);
 
     static Arm64KernelImageInfo InspectKernelImage(const std::vector<uint8_t>& kernel_bytes);
+    static VmError DecompressKernelAndInspect(ParsedBootImage& in_out_boot, std::string& out_error);
+    static VmError DecompressRamdisk(const std::vector<uint8_t>& ramdisk_bytes,
+                                     std::vector<uint8_t>& out_cpio,
+                                     std::string& out_error);
     static void ScanRamdiskForMagisk(ParsedBootImage& boot_img);
 };
 

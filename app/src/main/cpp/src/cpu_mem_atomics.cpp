@@ -192,6 +192,9 @@ bool AArch64CpuCore::ExecuteLoadStoreImm(const DecodedInsn& d) {
     if (v_simd) {
         is_store = ((opc & 1u) == 0u);
     } else {
+        if (size == 3u && opc == 2u) {
+            return true; // PRFM immediate is an architectural hint (no-op)
+        }
         is_store = (opc == 0u);
         sign_ext = (opc >= 2u);
         target_64 = (opc == 2u) || (size == 3u);
@@ -263,6 +266,9 @@ bool AArch64CpuCore::ExecuteLoadStoreReg(const DecodedInsn& d) {
     if (s_bit) idx <<= scale;
 
     const uint64_t addr = state_.ReadRegOrSp(rn) + idx;
+    if (!v_simd && size == 3u && opc == 2u) {
+        return true; // PRFM register is an architectural hint (no-op)
+    }
     bool is_store = v_simd ? ((opc & 1u) == 0u) : (opc == 0u);
     bool sign_ext = !v_simd && (opc >= 2u);
     bool target_64 = v_simd || (opc == 2u) || (size == 3u);

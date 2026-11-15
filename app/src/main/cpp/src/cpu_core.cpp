@@ -320,6 +320,10 @@ VmError AArch64CpuCore::Run(uint64_t max_insns) {
 
     while (!state_.halted && !stop_requested_ &&
            (state_.instructions_executed - start_count) < max_insns) {
+        EvaluateTimersAndIrqs();
+        if (state_.waiting_for_interrupt && (state_.pending_irq || state_.pending_fiq)) {
+            state_.waiting_for_interrupt = false;
+        }
         if (state_.pending_fiq && !state_.pstate.f) {
             DeliverInterrupt(true);
             prev_tb = nullptr;
@@ -363,7 +367,9 @@ VmError AArch64CpuCore::Run(uint64_t max_insns) {
         bool block_interrupted = false;
 
         for (size_t i = 0; i < tb->insns.size(); ++i) {
-            const DecodedInsn& insn = tb->insns[i];
+            const DecodedInsn insn = tb->insns[i];
+            const size_t tb_len = tb->insns.size();
+            const uint64_t tb_va = tb->guest_va;
             uint64_t next_pc = state_.pc + 4ULL;
             const bool ok = ExecuteInstruction(insn, next_pc);
             ++state_.instructions_executed;
@@ -378,15 +384,22 @@ VmError AArch64CpuCore::Run(uint64_t max_insns) {
             }
             state_.pc = next_pc;
 
+            // Hypercalls / SysOps (like execve address-space reset or IC IALLU) may invalidate tb
+            if (insn.kind == InsnKind::Hvc || insn.kind == InsnKind::Smc ||
+                insn.kind == InsnKind::SysOp) {
+                block_interrupted = true;
+                break;
+            }
+
             if (insn.kind == InsnKind::BranchCond || insn.kind == InsnKind::CompareBranch ||
                 insn.kind == InsnKind::TestBranch) {
-                const uint64_t taken_pc = tb->guest_va + i * 4ULL + static_cast<uint64_t>(insn.simm);
+                const uint64_t taken_pc = tb_va + i * 4ULL + static_cast<uint64_t>(insn.simm);
                 exit_slot = (next_pc == taken_pc) ? 1 : 0;
                 tb->link_va[exit_slot] = next_pc;
             } else if (insn.kind == InsnKind::BranchImm && !insn.set_flags) {
                 exit_slot = 0;
                 tb->link_va[0] = next_pc;
-            } else if (i + 1u == tb->insns.size()) {
+            } else if (i + 1u == tb_len) {
                 exit_slot = (insn.kind == InsnKind::BranchReg || insn.is_terminating) ? -1 : 0;
                 if (exit_slot == 0) tb->link_va[0] = next_pc;
             }
@@ -884,8 +897,8 @@ bool AArch64CpuCore::ExecuteInstruction(const DecodedInsn& d, uint64_t& next_pc)
                 if (bytes == 16u) return ReadMem128(addr, state_.v[d.rd].u64[0], state_.v[d.rd].u64[1]);
                 return ReadMem(addr, bytes, state_.v[d.rd].u64[0], false);
             }
-            uint32_t bytes = (opc == 1u || opc == 2u) ? 8u : 4u;
-            if (opc == 2u) bytes = 4u; // LDRSW
+            if (opc == 3u) return true; // PRFM literal hint (no-op)
+            uint32_t bytes = (opc == 1u) ? 8u : 4u;
             uint64_t val = 0;
             if (!ReadMem(addr, bytes, val, false)) return false;
             if (opc == 2u) val = static_cast<uint64_t>(SignExtend(val, 32));
