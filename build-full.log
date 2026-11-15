@@ -52,16 +52,13 @@ The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml 
 > Task :app:compressDebugAssets
 > Task :app:desugarDebugFileDependencies
 > Task :app:processDebugJavaRes NO-SOURCE
-> Task :app:processDebugManifestForPackage
 > Task :app:mergeDebugJavaResource
-> Task :app:processDebugResources
 > Task :app:checkDebugDuplicateClasses
-> Task :app:compileDebugJavaWithJavac
-> Task :app:dexBuilderDebug
-> Task :app:mergeDebugGlobalSynthetics
-> Task :app:mergeLibDexDebug
-> Task :app:mergeProjectDexDebug
 > Task :app:configureCMakeDebug[arm64-v8a]
+> Task :app:processDebugManifestForPackage
+> Task :app:mergeExtDexDebug
+> Task :app:mergeLibDexDebug
+> Task :app:processDebugResources
 
 > Task :app:buildCMakeDebug[arm64-v8a]
 C/C++: ninja: Entering directory `/home/runner/work/Test/Test/app/.cxx/Debug/73414y1y/arm64-v8a'
@@ -180,31 +177,30 @@ C/C++: clang++: error: linker command failed with exit code 1 (use -v to see inv
 C/C++: ninja: build stopped: subcommand failed.
 
 > Task :app:buildCMakeDebug[arm64-v8a] FAILED
-> Task :app:mergeExtDexDebug
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
 Execution failed for task ':app:buildCMakeDebug[arm64-v8a]'.
 > com.android.ide.common.process.ProcessException: ninja: Entering directory `/home/runner/work/Test/Test/app/.cxx/Debug/73414y1y/arm64-v8a'
-  [1/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/guest_ram.cpp.o
-  [2/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/mmu_tlb.cpp.o
+  [1/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/mmu_tlb.cpp.o
+  [2/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/guest_ram.cpp.o
   [3/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/pl011_uart.cpp.o
   [4/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/boot_image.cpp.o
   [5/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_sysregs.cpp.o
   [6/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_neon.cpp.o
   [7/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/dbt_cache.cpp.o
-  [8/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_mem_atomics.cpp.o
-  [9/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_core.cpp.o
+  [8/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_core.cpp.o
+  [9/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/cpu_mem_atomics.cpp.o
   [10/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/fdt_builder.cpp.o
   [11/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/ext4_reader.cpp.o
-  [12/19] Building CXX object CMakeFiles/haseeb_vm.dir/haseeb_vm_jni.cpp.o
-  [13/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/property_service.cpp.o
+  [12/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/property_service.cpp.o
+  [13/19] Building CXX object CMakeFiles/haseeb_vm.dir/haseeb_vm_jni.cpp.o
   [14/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/elf64_loader.cpp.o
   [15/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/machine.cpp.o
-  [16/19] Building CXX object CMakeFiles/haseeb_vm.dir/src/engine_runtime.cpp.o
-  [17/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/prop_area.cpp.o
-  [18/19] Linking CXX static library libhaseeb_vm_core.a
+  [16/19] Building CXX object CMakeFiles/haseeb_vm_core.dir/src/prop_area.cpp.o
+  [17/19] Linking CXX static library libhaseeb_vm_core.a
+  [18/19] Building CXX object CMakeFiles/haseeb_vm.dir/src/engine_runtime.cpp.o
   [19/19] Linking CXX shared library /home/runner/work/Test/Test/app/build/intermediates/cxx/Debug/73414y1y/obj/arm64-v8a/libhaseeb_vm.so
   FAILED: /home/runner/work/Test/Test/app/build/intermediates/cxx/Debug/73414y1y/obj/arm64-v8a/libhaseeb_vm.so 
   : && /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot -fPIC -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments    -Wl,-z,max-page-size=16384 -shared -Wl,-soname,libhaseeb_vm.so -o /home/runner/work/Test/Test/app/build/intermediates/cxx/Debug/73414y1y/obj/arm64-v8a/libhaseeb_vm.so CMakeFiles/haseeb_vm.dir/haseeb_vm_jni.cpp.o CMakeFiles/haseeb_vm.dir/src/engine_runtime.cpp.o  libhaseeb_vm_core.a  /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/26/libandroid.so  /home/runner/android-sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/26/liblog.so  -pthread  -latomic -lm && :
@@ -354,5 +350,5 @@ Execution failed for task ':app:buildCMakeDebug[arm64-v8a]'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 2m 11s
-29 actionable tasks: 29 executed
+BUILD FAILED in 3m 20s
+25 actionable tasks: 25 executed
