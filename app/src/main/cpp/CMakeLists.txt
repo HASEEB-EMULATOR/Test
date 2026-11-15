@@ -15,6 +15,12 @@ add_library(
     src/fdt_builder.cpp
     src/guest_ram.cpp
     src/pl011_uart.cpp
+    src/mmu_tlb.cpp
+    src/dbt_cache.cpp
+    src/cpu_sysregs.cpp
+    src/cpu_neon.cpp
+    src/cpu_mem_atomics.cpp
+    src/cpu_core.cpp
     src/machine.cpp
     src/ext4_reader.cpp
 )
@@ -96,4 +102,20 @@ if(HASEEB_BUILD_HOST_TESTS OR HASEEB_BUILD_GUEST_TEST)
         target_link_options(haseeb_m1_vm_tests PRIVATE -Wl,-z,max-page-size=16384)
     endif()
     add_test(NAME m1_boot_machine_tests COMMAND haseeb_m1_vm_tests)
+
+    add_executable(
+        haseeb_m2_cpu_mmu_tests
+        tests/m2_cpu_mmu_test.cpp
+    )
+    target_include_directories(
+        haseeb_m2_cpu_mmu_tests
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    target_compile_options(haseeb_m2_cpu_mmu_tests PRIVATE -Wall -Wextra -O2)
+    target_link_libraries(haseeb_m2_cpu_mmu_tests PRIVATE haseeb_vm_core)
+    if(ANDROID)
+        target_link_options(haseeb_m2_cpu_mmu_tests PRIVATE -Wl,-z,max-page-size=16384)
+    endif()
+    add_test(NAME m2_cpu_mmu_tests COMMAND haseeb_m2_cpu_mmu_tests)
 endif()

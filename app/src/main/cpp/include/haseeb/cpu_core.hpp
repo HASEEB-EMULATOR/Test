@@ -1,0 +1,94 @@
+#pragma once
+
+#include "haseeb/cpu_state.hpp"
+#include "haseeb/dbt_cache.hpp"
+#include "haseeb/guest_ram.hpp"
+#include "haseeb/mmu_tlb.hpp"
+#include "haseeb/vm_types.hpp"
+
+#include <cstdint>
+#include <functional>
+
+namespace haseeb::vm {
+
+// Hypervisor/Supervisor HVC/SMC callback used by M3 PSCI / Virtio / Paravirt traps
+struct HypercallResult {
+    bool handled = false;
+    bool halt_vm = false;
+};
+
+using HypercallHandler = std::function<HypercallResult(CpuState& cpu, uint16_t imm16, bool is_smc)>;
+
+// Complete AArch64 EL0/EL1 CPU core with DBT basic-block cache, 4K/16K stage-1 MMU + TLB,
+// full exception/interrupt vectoring, system registers, exclusives/LSE atomics, and NEON/FP.
+class AArch64CpuCore {
+public:
+    AArch64CpuCore(GuestRam& ram, MmioBus& mmio_bus, uint32_t cpu_id = 0);
+
+    void Reset(uint64_t entry_pc, uint64_t initial_sp = 0, uint8_t start_el = 1);
+    void SetHypercallHandler(HypercallHandler handler) { hvc_handler_ = std::move(handler); }
+
+    // Execute up to max_insns guest instructions; returns VmError::Ok on clean halt/budget/WFI,
+    // or VmError::ExecutionTrap if an unhandled fatal condition occurs.
+    VmError Run(uint64_t max_insns = 1000000ULL);
+    void RequestStop() { stop_requested_ = true; }
+
+    // Exception & interrupt entry helpers
+    void RaiseException(uint32_t ec, uint32_t iss, uint64_t far_val, bool use_far, uint64_t return_pc);
+    void ReturnFromException();
+    void DeliverInterrupt(bool is_fiq);
+
+    CpuState& State() { return state_; }
+    const CpuState& State() const { return state_; }
+    Arm64Mmu& Mmu() { return mmu_; }
+    const Arm64Mmu& Mmu() const { return mmu_; }
+    TranslationCache& Cache() { return cache_; }
+    const TranslationCache& Cache() const { return cache_; }
+
+private:
+    uint64_t ContextTag() const;
+    TranslatedBlock* GetOrTranslateBlock(uint64_t guest_va, bool& out_faulted);
+
+    // Guest memory operations routed through Stage-1 MMU/TLB -> RAM or MmioBus + SMC invalidation
+    bool ReadMem(uint64_t va, unsigned size_bytes, uint64_t& out_val, bool acquire = false);
+    bool WriteMem(uint64_t va, unsigned size_bytes, uint64_t val, bool release = false);
+    bool ReadMem128(uint64_t va, uint64_t& lo, uint64_t& hi);
+    bool WriteMem128(uint64_t va, uint64_t lo, uint64_t hi);
+    bool FetchInsn(uint64_t va, uint32_t& out_insn, uint64_t& out_phys);
+
+    bool EvalCond(uint8_t cond) const;
+    void SetFlagsAdd64(uint64_t op1, uint64_t op2, uint64_t res, bool c_in);
+    void SetFlagsSub64(uint64_t op1, uint64_t op2, uint64_t res, bool borrow_in);
+    void SetFlagsAdd32(uint32_t op1, uint32_t op2, uint32_t res, bool c_in);
+    void SetFlagsSub32(uint32_t op1, uint32_t op2, uint32_t res, bool borrow_in);
+
+    // Executes one decoded instruction; sets next_pc and returns false if exception/halt occurred
+    bool ExecuteInstruction(const DecodedInsn& insn, uint64_t& next_pc);
+    bool ExecuteLoadStoreImm(const DecodedInsn& d);
+    bool ExecuteLoadStoreReg(const DecodedInsn& d);
+    bool ExecuteLoadStorePair(const DecodedInsn& d);
+    bool ExecuteExclusive(const DecodedInsn& d);
+    bool ExecuteAtomicLse(const DecodedInsn& d);
+
+    // Implemented in cpu_sysregs.cpp
+    bool ExecuteMrs(uint32_t insn);
+    bool ExecuteMsrReg(uint32_t insn);
+    bool ExecuteMsrImm(uint32_t insn);
+    bool ExecuteSysOp(uint32_t insn);
+    uint64_t ReadSystemTimerTicks() const;
+
+    // Implemented in cpu_neon.cpp
+    bool CheckFpSimdEnabled();
+    bool ExecuteFpScalar(uint32_t insn);
+    bool ExecuteNeonSimd(uint32_t insn);
+
+    GuestRam& ram_;
+    MmioBus& mmio_bus_;
+    CpuState state_{};
+    Arm64Mmu mmu_;
+    TranslationCache cache_;
+    HypercallHandler hvc_handler_;
+    bool stop_requested_ = false;
+};
+
+} // namespace haseeb::vm

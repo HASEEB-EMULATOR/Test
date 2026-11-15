@@ -48,15 +48,10 @@ uint32_t EncodeHlt(uint16_t imm16) {
     return 0xD4400000u | (static_cast<uint32_t>(imm16) << 5);
 }
 
-int64_t SignExtend(uint64_t v, int bits) {
-    uint64_t shift = 64 - bits;
-    return static_cast<int64_t>(v << shift) >> shift;
-}
-
 } // namespace
 
 VirtualMachineSkeleton::VirtualMachineSkeleton(Pl011Uart::TxLineCallback uart_cb)
-    : uart_(std::move(uart_cb)) {}
+    : uart_(std::move(uart_cb)), cpu_(ram_, mmio_bus_, 0) {}
 
 VirtualMachineSkeleton::~VirtualMachineSkeleton() {
     Shutdown();
@@ -64,6 +59,7 @@ VirtualMachineSkeleton::~VirtualMachineSkeleton() {
 
 void VirtualMachineSkeleton::Shutdown() {
     stop_requested_.store(true);
+    cpu_.RequestStop();
     uart_.FlushLine();
     mmio_bus_.Clear();
     ram_.Free();
@@ -73,57 +69,13 @@ void VirtualMachineSkeleton::Shutdown() {
     initrd_size_ = 0;
 }
 
-bool VirtualMachineSkeleton::LoadPhysU8(uint64_t addr, uint8_t& out) const {
-    uint64_t v = 0;
-    if (mmio_bus_.Read(addr, 1, v)) {
-        out = static_cast<uint8_t>(v & 0xFFu);
-        return true;
-    }
-    return ram_.ReadU8(addr, out);
-}
-
-bool VirtualMachineSkeleton::LoadPhysU32(uint64_t addr, uint32_t& out) const {
-    uint64_t v = 0;
-    if (mmio_bus_.Read(addr, 4, v)) {
-        out = static_cast<uint32_t>(v & 0xFFFFFFFFu);
-        return true;
-    }
-    return ram_.ReadU32(addr, out);
-}
-
-bool VirtualMachineSkeleton::LoadPhysU64(uint64_t addr, uint64_t& out) const {
-    uint64_t v = 0;
-    if (mmio_bus_.Read(addr, 8, v)) {
-        out = v;
-        return true;
-    }
-    return ram_.ReadU64(addr, out);
-}
-
-bool VirtualMachineSkeleton::StorePhysU8(uint64_t addr, uint8_t val) {
-    if (mmio_bus_.Write(addr, 1, val)) return true;
-    return ram_.WriteU8(addr, val);
-}
-
-bool VirtualMachineSkeleton::StorePhysU32(uint64_t addr, uint32_t val) {
-    if (mmio_bus_.Write(addr, 4, val)) return true;
-    return ram_.WriteU32(addr, val);
-}
-
-bool VirtualMachineSkeleton::StorePhysU64(uint64_t addr, uint64_t val) {
-    if (mmio_bus_.Write(addr, 8, val)) return true;
-    return ram_.WriteU64(addr, val);
-}
-
 void VirtualMachineSkeleton::EmitBootloaderStub(uint64_t dtb_addr,
                                                 uint64_t msg_addr,
                                                 const std::string& banner_msg) {
-    // Place null-terminated banner string in RAM
     std::string nul_msg = banner_msg;
     nul_msg.push_back('\0');
     ram_.WriteBytes(msg_addr, nul_msg.data(), nul_msg.size());
 
-    // Assemble AArch64 second-stage bootloader at kBootStubBase (0x40000000)
     std::vector<uint32_t> code;
     EmitLoadImm64(code, 0, dtb_addr);        // Linux arm64 boot protocol: x0 = physical DTB ptr
     EmitLoadImm64(code, 1, 0);               // x1 = 0
@@ -132,14 +84,6 @@ void VirtualMachineSkeleton::EmitBootloaderStub(uint64_t dtb_addr,
     EmitLoadImm64(code, 10, kPl011UartBase); // x10 = UARTDR base
     EmitLoadImm64(code, 11, msg_addr);       // x11 = banner string cursor
 
-    // UART print loop:
-    // loop:
-    //   ldrb w12, [x11], #1
-    //   cbz  x12, done (+3 insns)
-    //   strb w12, [x10, #0]
-    //   b    loop (-3 insns)
-    // done:
-    //   hlt  #0 (M1 kernel handoff point; M2 replaces HLT target with PC = kernel_guest_addr_)
     code.push_back(EncodeLdrbPostInc(12, 11, 1));
     code.push_back(EncodeCbz64(12, 3));
     code.push_back(EncodeStrbZero(12, 10));
@@ -174,7 +118,6 @@ VmError VirtualMachineSkeleton::InitializeAndStage(const MachineBootConfig& conf
         combined_cmdline += " " + config.extra_cmdline;
     }
 
-    // 1. Stage initrd ramdisk if provided
     if (boot_img && !boot_img->ramdisk.empty()) {
         if (!ram_.WriteBytes(kInitrdLoadBase, boot_img->ramdisk.data(), boot_img->ramdisk.size())) {
             out_error = "Ramdisk exceeds guest RAM bounds";
@@ -184,7 +127,6 @@ VmError VirtualMachineSkeleton::InitializeAndStage(const MachineBootConfig& conf
         initrd_size_ = boot_img->ramdisk.size();
     }
 
-    // 2. Stage kernel Image if provided
     uint64_t kernel_offset = 0x80000ULL;
     if (boot_img && !boot_img->kernel.empty()) {
         if (boot_img->kernel_info.valid_arm64_magic) {
@@ -199,7 +141,6 @@ VmError VirtualMachineSkeleton::InitializeAndStage(const MachineBootConfig& conf
         kernel_guest_addr_ = kGuestRamBase + kernel_offset;
     }
 
-    // 3. Compile DTB via FdtBuilder and place near top of RAM (aligned to 16 KiB)
     std::vector<uint8_t> dtb_blob;
     FdtBuildParams fdt_params;
     fdt_params.ram_base = kGuestRamBase;
@@ -220,7 +161,6 @@ VmError VirtualMachineSkeleton::InitializeAndStage(const MachineBootConfig& conf
         return VmError::OutOfMemory;
     }
 
-    // 4. Emit AArch64 second-stage bootloader stub & set CPU reset state
     std::ostringstream banner;
     banner << "[HASEEB-VM] AArch64 bootloader stub initialized\r\n"
            << "[HASEEB-VM] RAM: " << config.ram_mb << " MiB @ 0x40000000, DTB @ 0x"
@@ -233,88 +173,21 @@ VmError VirtualMachineSkeleton::InitializeAndStage(const MachineBootConfig& conf
         banner << "[HASEEB-VM] Magisk ramdisk signature detected: "
                << boot_img->magisk_evidence << "\r\n";
     }
-    banner << "[HASEEB-VM] PL011 UART console online; awaiting M2 full AArch64 DBT CPU handoff.\r\n";
+    banner << "[HASEEB-VM] PL011 UART online; M2 AArch64 DBT CPU & Stage-1 MMU active.\r\n";
 
     EmitBootloaderStub(dtb_guest_addr_, kBootStubBase + 0x400ULL, banner.str());
 
-    cpu_ = M1BootCpuState{};
-    cpu_.pc = kBootStubBase;
-    cpu_.sp = dtb_guest_addr_;
+    cpu_.Reset(kBootStubBase, dtb_guest_addr_, 1);
     return VmError::Ok;
 }
 
 VmError VirtualMachineSkeleton::RunBootStubUntilHalt(uint64_t max_steps) {
     if (!ram_.IsAllocated()) return VmError::NotRunning;
 
-    while (!cpu_.halted && !stop_requested_.load() && cpu_.instructions_executed < max_steps) {
-        uint32_t insn = 0;
-        if (!LoadPhysU32(cpu_.pc, insn)) {
-            return VmError::ExecutionTrap;
-        }
-
-        uint64_t next_pc = cpu_.pc + 4ull;
-
-        // Decode subset emitted by M1 bootloader stub (full ISA moves to M2 DBT engine)
-        if ((insn & 0x7F800000u) == 0x52800000u && (insn & 0x80000000u) != 0u) {
-            // MOVZ / MOVK 64-bit: bit31=1, bits30..29 = 10(MOVZ) / 11(MOVK)
-            uint8_t opc = static_cast<uint8_t>((insn >> 29) & 3u);
-            uint8_t hw = static_cast<uint8_t>((insn >> 21) & 3u);
-            uint64_t imm16 = (insn >> 5) & 0xFFFFu;
-            uint8_t rd = static_cast<uint8_t>(insn & 31u);
-            if (rd < 31u) {
-                if (opc == 2u) { // MOVZ
-                    cpu_.x[rd] = imm16 << (hw * 16u);
-                } else if (opc == 3u) { // MOVK
-                    uint64_t mask = 0xFFFFULL << (hw * 16u);
-                    cpu_.x[rd] = (cpu_.x[rd] & ~mask) | (imm16 << (hw * 16u));
-                } else {
-                    return VmError::ExecutionTrap;
-                }
-            }
-        } else if ((insn & 0xFFE00C00u) == 0x38400400u) {
-            // LDRB Wt, [Xn], #simm9 (post-index)
-            uint8_t rt = static_cast<uint8_t>(insn & 31u);
-            uint8_t rn = static_cast<uint8_t>((insn >> 5) & 31u);
-            int64_t simm9 = SignExtend((insn >> 12) & 0x1FFu, 9);
-            uint64_t addr = (rn == 31u) ? cpu_.sp : cpu_.x[rn];
-            uint8_t val = 0;
-            if (!LoadPhysU8(addr, val)) return VmError::ExecutionTrap;
-            if (rt < 31u) cpu_.x[rt] = val;
-            if (rn == 31u) cpu_.sp += static_cast<uint64_t>(simm9);
-            else cpu_.x[rn] += static_cast<uint64_t>(simm9);
-        } else if ((insn & 0xFFC00000u) == 0x39000000u) {
-            // STRB Wt, [Xn, #uimm12]
-            uint8_t rt = static_cast<uint8_t>(insn & 31u);
-            uint8_t rn = static_cast<uint8_t>((insn >> 5) & 31u);
-            uint64_t imm12 = (insn >> 10) & 0xFFFu;
-            uint64_t addr = ((rn == 31u) ? cpu_.sp : cpu_.x[rn]) + imm12;
-            uint8_t val = (rt == 31u) ? 0u : static_cast<uint8_t>(cpu_.x[rt] & 0xFFu);
-            if (!StorePhysU8(addr, val)) return VmError::ExecutionTrap;
-        } else if ((insn & 0xFF000000u) == 0xB4000000u) {
-            // CBZ Xt, #simm19
-            uint8_t rt = static_cast<uint8_t>(insn & 31u);
-            int64_t off = SignExtend((insn >> 5) & 0x7FFFFu, 19) * 4;
-            uint64_t val = (rt == 31u) ? 0ull : cpu_.x[rt];
-            if (val == 0ull) {
-                next_pc = static_cast<uint64_t>(static_cast<int64_t>(cpu_.pc) + off);
-            }
-        } else if ((insn & 0xFC000000u) == 0x14000000u) {
-            // B #simm26
-            int64_t off = SignExtend(insn & 0x03FFFFFFu, 26) * 4;
-            next_pc = static_cast<uint64_t>(static_cast<int64_t>(cpu_.pc) + off);
-        } else if ((insn & 0xFFE0001Fu) == 0xD4400000u) {
-            // HLT #imm16
-            cpu_.halted = true;
-        } else {
-            return VmError::ExecutionTrap;
-        }
-
-        cpu_.pc = next_pc;
-        cpu_.instructions_executed++;
-    }
-
+    VmError res = cpu_.Run(max_steps);
     uart_.FlushLine();
-    return cpu_.halted ? VmError::Ok : VmError::ExecutionTrap;
+    if (res != VmError::Ok) return res;
+    return cpu_.State().halted ? VmError::Ok : VmError::ExecutionTrap;
 }
 
 } // namespace haseeb::vm
