@@ -35,8 +35,8 @@ Installing Android SDK Platform-Tools in /home/runner/android-sdk/platform-tools
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
 > Task :app:createDebugCompatibleScreenManifests
-> Task :app:extractDeepLinksDebug
 > Task :app:parseDebugLocalResources
+> Task :app:extractDeepLinksDebug
 > Task :app:mergeDebugResources
 
 > Task :app:processDebugMainManifest
@@ -49,19 +49,19 @@ The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml 
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets
-> Task :app:processDebugManifestForPackage
 > Task :app:compressDebugAssets
 > Task :app:desugarDebugFileDependencies
 > Task :app:processDebugJavaRes NO-SOURCE
-> Task :app:processDebugResources
+> Task :app:processDebugManifestForPackage
 > Task :app:mergeDebugJavaResource
+> Task :app:processDebugResources
+> Task :app:checkDebugDuplicateClasses
 > Task :app:compileDebugJavaWithJavac
 > Task :app:dexBuilderDebug
 > Task :app:mergeDebugGlobalSynthetics
-> Task :app:checkDebugDuplicateClasses
-> Task :app:configureCMakeDebug[arm64-v8a]
 > Task :app:mergeLibDexDebug
 > Task :app:mergeProjectDexDebug
+> Task :app:configureCMakeDebug[arm64-v8a]
 > Task :app:buildCMakeDebug[arm64-v8a]
 > Task :app:mergeDebugJniLibFolders
 > Task :app:validateSigningDebug
@@ -74,5 +74,5 @@ The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml 
 > Task :app:createDebugApkListingFileRedirect
 > Task :app:assembleDebug
 
-BUILD SUCCESSFUL in 2m 19s
+BUILD SUCCESSFUL in 2m 30s
 37 actionable tasks: 37 executed
